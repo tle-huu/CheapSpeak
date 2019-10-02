@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -70,35 +71,33 @@ public class Client
 
                         microphone_.start();
 
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-                        int bytesRead = 0;
                         int numBytesRead;
                         
                         Log.LOG(Log.Level.INFO, "Microphone starting");
                         while (running_.get())
                         {
-                            byte[] data = new byte[1024];
+
+                            // Reading audio data from the microphone and writing it to data[]
+                            byte[] data = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
                             numBytesRead = microphone_.read(data, 0, data.length);
 
+                            // Calculating absolute value mean to decide whether or not send the packet
                             int sum = 0;
                             for (int x : data)
                             {
                                 sum += Math.abs(x);
                             }
-                            if (sum < 15000)
+                            System.out.println("[DEBUG] Sum microphone : [" + Integer.toString(sum) + "]");
+
+                            SoundPacket sound_packet = null;
+
+                            // Sending a null packet if the average sample is too low
+                            if ((sum / data.length) >= 1)
                             {
-                                continue;
+                                sound_packet = new SoundPacket(data);
                             }
-                            System.out.println("Sum microphone : [" + Integer.toString(sum) + "]");
 
-
-                            bytesRead += numBytesRead;
-                            out.write(data, 0, data.length);
-
-                            SoundPacket packet = new SoundPacket(data);
-
-                            Datagram datagram = new Datagram(UUID.randomUUID(), packet);
+                            Datagram datagram = new Datagram(sound_packet);
                             output_stream_.writeObject(datagram);
                         }
                         microphone_.stop();
@@ -138,17 +137,6 @@ public class Client
                     try
                     {
                         Log.LOG(Log.Level.INFO, "Listening thread is running");
-
-                        boolean res = speaker_.open();
-
-                        if (!res)
-                        {
-                            Log.LOG(Log.Level.ERROR, "Error trying to open microphone");
-                            return;
-                        }
-
-                        speaker_.start();
-
                         while (running_.get())
                         {
                             try
@@ -157,23 +145,37 @@ public class Client
                                 {
                                     Datagram datagram = (Datagram) input_stream_.readObject();
 
-                                    SoundPacket sound_packet = (SoundPacket) datagram.data();
-                                    speaker_.write(sound_packet.data(), 0, sound_packet.data().length);
-                                    // speakers.drain();
+                                    // Find the channel associated to the datagramn client uuid
+                                    AudioChannel channel = audio_channels_.get(datagram.client_uuid());
 
+                                    // If none exists, create one
+                                    // TODO: Add a thread pool to the client
+                                    if (channel == null)
+                                    {
+                                        channel = new AudioChannel(datagram.client_uuid());
+                                        audio_channels_.put(datagram.client_uuid(), channel);
+                                        channel.start();
+                                    }
+                                    channel.push(datagram);
                                 }
                             }
                             catch (Exception e)
                             {
-                                Log.LOG(Log.Level.ERROR, "ClientConnection error reading input: " + e);
+                                Log.LOG(Log.Level.ERROR, "Client listening thread error in while loop: " + e);
+                                break;
                             }
                         } 
 
                     }
                     catch (Exception e)
                     {
+                        Log.LOG(Log.Level.ERROR, " Client listening thread global error" + e);
                         e.printStackTrace();
-                    } 
+                    }
+                    finally
+                    {
+                        Log.LOG(Log.Level.INFO, "Client listening thread shutting down");
+                    }
                 }
             });
             thread.start();
@@ -184,45 +186,9 @@ public class Client
         }
     }
 
-/*
-    public void start_send_message() throws IOException
-    {
-		input_stream_ = new ObjectInputStream(socket_.getInputStream());
-		output_stream_ = new ObjectOutputStream(socket_.getOutputStream());
+// PRIVATE
 
-        System.out.println("Write messages to send...");
-        Scanner scanner = new Scanner(System.in);
-
-        while (socket_.isConnected())
-        {
-            String message = scanner.nextLine();
-            // message += '\n';
-            byte[] buffer = message.getBytes();
-
-            try
-            {
-                System.out.println("Trying to send : " + new String(buffer));
-
-            	Datagram datagram = new Datagram(UUID.randomUUID(), new String(buffer));
-                output_stream_.writeObject(datagram);
-            }
-            catch (IOException e)
-            {
-                System.out.println(e.getMessage());
-                continue ;
-            }
-        }
-        scanner.close();
-        try
-        {
-            socket_.close();
-        }
-        catch (IOException e )
-        {
-            Log.LOG(Log.Level.ERROR, "error closing: " + e.getMessage());
-        }
-    }
-*/
+    private HashMap<UUID, AudioChannel> audio_channels_ = new HashMap<UUID, AudioChannel>();
 
     // Private Attributes
 

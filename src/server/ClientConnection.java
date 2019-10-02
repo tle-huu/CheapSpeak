@@ -67,10 +67,12 @@ public class ClientConnection implements Runnable
 
 					if (socket_.getInputStream().available() > 0)
 					{
-						// System.out.println("data available");
 						Datagram datagram = (Datagram) input_stream_.readObject();
+
+						// Setting emitter uuid
 						datagram.client_uuid(uuid_);
-						// System.out.println("Received: [" + (SoundPacket) datagram.data() + "]");
+
+						// Pushing to broadcaster thread
 						broadcast(datagram);
 
 					}

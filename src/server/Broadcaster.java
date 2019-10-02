@@ -36,12 +36,12 @@ public class Broadcaster extends Thread
                 Datagram new_datagram = get_new_datagram();
                 if (new_datagram == null)
                 {
-                    // Log.LOG(Log.Level.ERROR, "Broadcaster Error trying to get new datagram");
                     continue;
                 }
 
                 // Removing dead clients (broken pipes)
                 // TODO: Need to put a mutex on this scope to avoid java.util.ConcurrentModificationException
+                vocal_server_.clients_mutex_.lock();
                 {
                     Vector<ClientConnection> dead_clients = new Vector<ClientConnection>();
                     for (ClientConnection client_conn : vocal_server_.clients().values())
@@ -66,10 +66,11 @@ public class Broadcaster extends Thread
                         client_conn.send_datagram(new_datagram);
                     }
                 }
+                vocal_server_.clients_mutex_.unlock();
             }
             catch (Exception e)
             {
-                // Log.LOG(Log.Level.ERROR, "Broadcaster FATAL ERROR: " + e.getMessage());
+                Log.LOG(Log.Level.FATAL, "Error in recording thread");
                 e.printStackTrace();
                 break ;
             }

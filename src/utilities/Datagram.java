@@ -54,7 +54,7 @@ public class Datagram implements Serializable
 
 // PRIVATE
 
-	private 	  UUID 		client_uuid_;
+	private 	  UUID 		client_uuid_ = null;
 	final private Date 		timestamp_;
 	final private Object  	data_;
 

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.HashMap;
 import java.util.UUID;
@@ -96,17 +97,6 @@ public class VocalServer
 		return true;
 	}
 
-	public void broadcast(final Datagram datagram, final UUID sender) throws Exception
-	{
-		for (ClientConnection conn : clients_.values())
-		{
-			if (conn.uuid() != sender && conn.alive())
-			{
-				boolean res = conn.send_datagram(datagram);
-			}
-		}
-	}
-
 // Exposed interface for server side objects (mainly used by the ConnetionClients)
 	public final boolean add_to_broadcast(Datagram datagram)
 	{
@@ -126,8 +116,9 @@ public class VocalServer
 
 	public final boolean remove_client(ClientConnection client_conn)
 	{
-
+		clients_mutex_.lock();
 		clients_.remove(client_conn.uuid());
+		clients_mutex_.unlock();
 		return true;
 	}
 
@@ -146,8 +137,10 @@ public class VocalServer
 
 	private boolean add_client(ClientConnection client_conn)
 	{
+		clients_mutex_.lock();
 		// TODO: Protect this with a mutex
 		clients_.put(client_conn.uuid(), client_conn);
+		clients_mutex_.unlock();
 		return true;
 	}
 
@@ -156,6 +149,7 @@ public class VocalServer
 
 	// Hash map to store client connections objects
 	private HashMap<UUID, ClientConnection> clients_ = new HashMap<UUID, ClientConnection>();
+	public final ReentrantLock clients_mutex_ = new ReentrantLock();
 
 	// Shared ring buffer for broadcaster and client connections communication
 	private RingBuffer<Datagram> broadcast_queue_ = new RingBuffer<Datagram>();

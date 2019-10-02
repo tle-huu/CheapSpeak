@@ -15,7 +15,7 @@ public class Speaker
 
 // PRIVATE CONST
 	static private final float  SAMPLE_RATE = 8000.0f;
-	static private final int 	SAMPLE_SIZE = 16;
+	static private final int 	SAMPLE_SIZE = 8;
 
 // PUBLIC
 

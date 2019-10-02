@@ -12,9 +12,11 @@ import javax.sound.sampled.AudioFormat;
  * @author dosse
  */
 public class SoundPacket implements Serializable{
-    public static AudioFormat defaultFormat = new AudioFormat(11025f, 8, 1, true, true); //11.025khz, 8bit, mono, signed, big endian (changes nothing in 8 bit) ~8kb/s
-    public static int defaultDataLenght = 1024; //send 1200 samples/packet by default
-    private byte[] data_; //actual data. if null, comfort noise will be played
+	// Format: sample rate, sample encoding (in bits), channels number, signed, big endian
+	// 11.025khz, 8bit, mono, signed, big endian (changes nothing in 8 bit) ~8kb/s
+    public final static AudioFormat DEFAULT_FORMAT = new AudioFormat(11025f, 8, 1, true, true);
+    public final static int DEFAULT_DATA_LENGTH = 4096;
+    private byte[] data_; // Actual PCM data. If null, random noise should be played.
 
     public SoundPacket(byte[] data) {
         this.data_ = data;
