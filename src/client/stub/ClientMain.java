@@ -10,8 +10,8 @@ public class ClientMain
 		
         String host = argv[0];
         String port = argv[1];
-    
-		Client client = new Client(argv[0], 4242);
+    	
+        Client client = new Client(argv[0], 4242);
         client.start_listening_thread();
         client.start_recording_thread();
 	}

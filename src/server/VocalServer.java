@@ -98,12 +98,12 @@ public class VocalServer
 	}
 
 // Exposed interface for server side objects (mainly used by the ConnetionClients)
-	public final boolean add_to_broadcast(Datagram datagram)
+	public final boolean add_to_broadcast(Event event)
 	{
-		return broadcast_queue_.push(datagram);
+		return broadcast_queue_.push(event);
 	}
 
-	public final Datagram pop_from_broadcast()
+	public final Event pop_from_broadcast()
 	{
 		return broadcast_queue_.pop();
 	}
@@ -138,7 +138,7 @@ public class VocalServer
 	private boolean add_client(ClientConnection client_conn)
 	{
 		clients_mutex_.lock();
-		// TODO: Protect this with a mutex
+		// TODO: Protect this with a better mutex system
 		clients_.put(client_conn.uuid(), client_conn);
 		clients_mutex_.unlock();
 		return true;
@@ -149,23 +149,23 @@ public class VocalServer
 
 	// Hash map to store client connections objects
 	private HashMap<UUID, ClientConnection> clients_ = new HashMap<UUID, ClientConnection>();
-	public final ReentrantLock clients_mutex_ = new ReentrantLock();
+	public final ReentrantLock 				clients_mutex_ = new ReentrantLock();
 
 	// Shared ring buffer for broadcaster and client connections communication
-	private RingBuffer<Datagram> broadcast_queue_ = new RingBuffer<Datagram>();
+	private RingBuffer<Event> 			broadcast_queue_ = new RingBuffer<Event>();
+
 
 	/* 
 	 * Server infras
 	 */
+	private int 							port_;
 
-	private int port_;
+	private ServerSocket 					listening_socket_;
 
-	private ServerSocket listening_socket_;
-
-	private AtomicBoolean running_ = new AtomicBoolean(false);
+	private AtomicBoolean 					running_ = new AtomicBoolean(false);
 
 	// ThreadPool for client connection thread
 	// TODO: Change it to a dynamic thread pool
-	private ExecutorService executor_ = Executors.newFixedThreadPool(THREADS_NUMBER);
+	private ExecutorService 				executor_ = Executors.newFixedThreadPool(THREADS_NUMBER);
 
 }

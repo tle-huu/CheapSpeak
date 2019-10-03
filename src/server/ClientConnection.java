@@ -52,14 +52,22 @@ public class ClientConnection implements Runnable
 		Log.LOG(Log.Level.INFO, "Starting client [" + uuid_.toString() + "]");
 
 		running_ = true;
+
+		boolean accepted = handshake();
+
+		if (accepted == false)
+		{
+			Log.LOG(Log.Level.INFO, "Error while performing the handshake");
+			return ;
+		}
+
 		try
 		{
-	        // TODO: Tie this thread to the main server thread
-			while (true)
+			while (vocal_server_.running())
 			{
 				try
 				{
-					if (!socket_.isConnected() || socket_.isClosed() || socket_.isInputShutdown())
+					if (!alive())
 					{
 						close();
 						break;
@@ -67,13 +75,16 @@ public class ClientConnection implements Runnable
 
 					if (socket_.getInputStream().available() > 0)
 					{
-						Datagram datagram = (Datagram) input_stream_.readObject();
+						Event event = (Event) input_stream_.readObject();
 
 						// Setting emitter uuid
-						datagram.client_uuid(uuid_);
+						event.uuid(uuid_);
+
+						// Process the event
+						event_engine_.handle_event(event);
 
 						// Pushing to broadcaster thread
-						broadcast(datagram);
+						broadcast(event);
 
 					}
 				}
@@ -95,11 +106,12 @@ public class ClientConnection implements Runnable
 
 	}
 
-	public boolean send_datagram(final Datagram datagram) throws Exception
+	// Exposed method to be used by the broadcaster thread
+	public boolean send(final Event event) throws Exception
 	{
 		try
 		{
-		    output_stream_.writeObject(datagram);
+		    output_stream_.writeObject(event);
 		    return true;
 		}
 		catch (IOException e)
@@ -125,7 +137,7 @@ public class ClientConnection implements Runnable
 
 	public boolean alive()
 	{
-		return socket_.isConnected();
+		return socket_.isConnected() && !socket_.isInputShutdown();
 	}
 
 	public void close()
@@ -137,7 +149,6 @@ public class ClientConnection implements Runnable
 
 		try 
 		{
-			vocal_server_.remove_client(this);
 			input_stream_.close();
 			output_stream_.close();
 			socket_.close();
@@ -149,24 +160,27 @@ public class ClientConnection implements Runnable
 		}
 		finally
 		{
-		running_ = false;
-
+			vocal_server_.remove_client(this);
+			running_ = false;
 		}
 	}
 
 // PRIVATE
-
-	private void broadcast(final Datagram datagram) throws Exception
+	private void broadcast(final Event event) throws Exception
 	{
 		try
 		{
-			boolean res = vocal_server_.add_to_broadcast(datagram);
-			// vocal_server_.broadcast(datagram, uuid_);
+			boolean res = vocal_server_.add_to_broadcast(event);
 		}
 		catch (Exception e)
 		{
 			Log.LOG(Log.Level.ERROR, "ClientConnection broadcast error: " + e.getMessage());
 		}
+	}
+
+	private final boolean handshake()
+	{
+		return true;
 	}
 
 // PRIVATE
@@ -176,6 +190,9 @@ public class ClientConnection implements Runnable
 
 	// Reference to the server
 	final private VocalServer vocal_server_;
+
+	// EventEngine to process events
+	final private EventEngine event_engine_ = new EventEngine();
 
 	// Unique uuid
 	final private UUID uuid_;
@@ -187,6 +204,5 @@ public class ClientConnection implements Runnable
 	private ObjectOutputStream output_stream_;
 
 	private boolean running_ = false;
-
 
 }

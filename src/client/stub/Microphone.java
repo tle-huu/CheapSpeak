@@ -55,7 +55,6 @@ public class Microphone
 	public int read(byte[] buffer, int offset, int length)
 	{
          return microphone_.read(buffer, 0, length);
-
 	}
 
 	public void stop()

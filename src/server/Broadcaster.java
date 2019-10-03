@@ -33,8 +33,8 @@ public class Broadcaster extends Thread
         {
             try
             {
-                Datagram new_datagram = get_new_datagram();
-                if (new_datagram == null)
+                Event new_event = get_new_event();
+                if (new_event == null)
                 {
                     continue;
                 }
@@ -61,9 +61,10 @@ public class Broadcaster extends Thread
                 // Sending the packet to remaining connected clients
                 for (ClientConnection client_conn : vocal_server_.clients().values())
                 {
-                    if (client_conn.uuid() != new_datagram.client_uuid())
+                    // TODO: Should push into a ClientConnecton buffer instead of sending them directly
+                    if (client_conn.uuid() != new_event.uuid())
                     {
-                        client_conn.send_datagram(new_datagram);
+                        client_conn.send(new_event);
                     }
                 }
                 vocal_server_.clients_mutex_.unlock();
@@ -89,15 +90,10 @@ public class Broadcaster extends Thread
 
 
 // PRIVATE
-    private Datagram get_new_datagram()
+    private Event get_new_event()
     {
         return vocal_server_.pop_from_broadcast();
     }
-
-    // private boolean merge_packets(ArrayList<Datagram> packets)
-    // {
-    //     return true;
-    // }
 
 // PRIVATE
 

@@ -6,7 +6,6 @@ public class AudioChannel extends Thread
 {
 
 // PUBLIC
-
 	public AudioChannel(UUID client_uuid)
 	{
 		uuid_ = client_uuid;
@@ -49,17 +48,18 @@ public class AudioChannel extends Thread
                 try
                 {
 					// Poping out from the queue
-                    Datagram datagram = queue_.get(0);
+                    VoiceEvent voice_event = queue_.get(0);
                     queue_.remove(0);
 
-                    SoundPacket sound_packet = (SoundPacket) datagram.data();
+                    SoundPacket sound_packet = voice_event.sound_packet();
 
                     // Playing random noise if the packet does not contain any data
                     if (sound_packet == null)
                     {
                         byte[] noise = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
 
-                        for (int i = 0; i < noise.length; i++) {
+                        for (int i = 0; i < noise.length; i++)
+                        {
                             noise[i] = (byte) ((Math.random() * 3) - 1);
                         }
                         speaker_.write(noise, 0, noise.length);
@@ -83,9 +83,9 @@ public class AudioChannel extends Thread
 	}
 
 // PUBLIC
-	public void push(final Datagram datagram)
+	public void push(final VoiceEvent voice_event)
 	{
-		queue_.add(datagram);
+		queue_.add(voice_event);
 	}
 
 	public final UUID uuid()
@@ -93,14 +93,12 @@ public class AudioChannel extends Thread
 		return uuid_;
 	}
 
-
 // PRIVATE
+	private Vector<VoiceEvent> queue_ = new Vector<VoiceEvent>();
 
-	private Vector<Datagram> queue_ = new Vector<Datagram>();
+    private Speaker     	 speaker_ = new Speaker();
 
-    private Speaker     speaker_ = new Speaker();
-
-    private final UUID uuid_;
+    private final UUID 		 uuid_;
 
 
 

@@ -2,14 +2,14 @@ import java.util.Vector;
 
 
 /*
- *  Templated RingBuffer class foor inter threads communication
- *
+ *  Templated RingBuffer class for inter threads communication
  *  
+ *  A vector is used as the underlying structure to ensure thread safety
+ *  // TODO: MAke it an actual ring buffer
  */
 public class RingBuffer<T>
 {
 // PRIVATE CONST
-
     private final int DEFAULT_SIZE = 1024;
 
 // PUBLIC
@@ -23,9 +23,9 @@ public class RingBuffer<T>
     {
         if (is_empty())
         {
-            // Log.LOG(Log.Level.ERROR, "RingBuffer error: Trying to pop from an empty queue");
             return null;
         }
+        System.out.println("xxx [" +  Integer.toString(buffer_.size()) + "]");
         T first_elem = buffer_.firstElement();
         buffer_.remove(0);
         return first_elem;

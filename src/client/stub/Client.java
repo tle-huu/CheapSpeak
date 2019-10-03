@@ -24,6 +24,7 @@ import javax.sound.sampled.TargetDataLine;
 /*
  *
  *
+ *
  */
 public class Client
 {
@@ -53,7 +54,6 @@ public class Client
 
     public void start_recording_thread() throws Exception
     {
-
         try
         {
             Thread thread = new Thread(new Runnable() {
@@ -97,8 +97,8 @@ public class Client
                                 sound_packet = new SoundPacket(data);
                             }
 
-                            Datagram datagram = new Datagram(sound_packet);
-                            output_stream_.writeObject(datagram);
+                            VoiceEvent voice_event = new VoiceEvent(null, sound_packet);
+                            output_stream_.writeObject((Event) voice_event);
                         }
                         microphone_.stop();
                         Log.LOG(Log.Level.INFO, "Stopping microphone");
@@ -122,8 +122,6 @@ public class Client
         {
             Log.LOG(Log.Level.ERROR, "Error recording thread: " + e);
         }
-
-
     }
 
     public void start_listening_thread() throws Exception
@@ -143,20 +141,20 @@ public class Client
                             {
                                 if (socket_.getInputStream().available() > 0)
                                 {
-                                    Datagram datagram = (Datagram) input_stream_.readObject();
+                                    VoiceEvent event = (VoiceEvent) input_stream_.readObject();
 
                                     // Find the channel associated to the datagramn client uuid
-                                    AudioChannel channel = audio_channels_.get(datagram.client_uuid());
+                                    AudioChannel channel = audio_channels_.get(event.uuid());
 
                                     // If none exists, create one
                                     // TODO: Add a thread pool to the client
                                     if (channel == null)
                                     {
-                                        channel = new AudioChannel(datagram.client_uuid());
-                                        audio_channels_.put(datagram.client_uuid(), channel);
+                                        channel = new AudioChannel(event.uuid());
+                                        audio_channels_.put(event.uuid(), channel);
                                         channel.start();
                                     }
-                                    channel.push(datagram);
+                                    channel.push(event);
                                 }
                             }
                             catch (Exception e)
@@ -191,7 +189,6 @@ public class Client
     private HashMap<UUID, AudioChannel> audio_channels_ = new HashMap<UUID, AudioChannel>();
 
     // Private Attributes
-
     private String host_;
     private int    port_;
     private Socket socket_;
@@ -201,8 +198,8 @@ public class Client
     private AtomicBoolean running_ = new AtomicBoolean(true);
 
     // Voice IO
-    Microphone  microphone_ = new Microphone();
-    Speaker     speaker_ = new Speaker();
+    private Microphone  microphone_ = new Microphone();
+    private Speaker     speaker_ = new Speaker();
 
 	// Input Stream
 	private ObjectInputStream input_stream_ ;
