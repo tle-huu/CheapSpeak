@@ -1,3 +1,5 @@
+package utilities.infra;
+
 /*
  * Single class for logging purpose
  *

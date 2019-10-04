@@ -1,6 +1,10 @@
+package utilities;
+
 import java.io.Serializable;
 import java.util.Date;  
 import java.util.UUID;
+
+import utilities.infra.Log;
 
 /*
  * Abstract class representing Event packet sent over the network

@@ -1,3 +1,5 @@
+package utilities.infra;
+
 /*
  * Wrapper class to make the use of output parameter more explicit and non nullable
  */

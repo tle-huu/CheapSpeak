@@ -1,3 +1,5 @@
+package client.stub;
+
 public class ClientMain
 {
 	static public void main(String[] argv) throws Exception

@@ -1,3 +1,5 @@
+package client.stub;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,6 +23,10 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
+
+import utilities.Datagram;
+import utilities.SoundPacket;
+import utilities.infra.Log;
 
 /*
  * The Client class represents the low-level interface for network communication

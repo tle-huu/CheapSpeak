@@ -1,6 +1,12 @@
+package client.stub;
+
 import java.lang.Math; 
 import java.util.UUID;
 import java.util.Vector;
+
+import utilities.Datagram;
+import utilities.SoundPacket;
+import utilities.infra.Log;
 
 public class AudioChannel extends Thread
 {
