@@ -57,7 +57,7 @@ public class ClientConnection implements Runnable
 
 		if (accepted == false)
 		{
-			Log.LOG(Log.Level.INFO, "Error while performing the handshake");
+			Log.LOG(Log.Level.ERROR, "Error while performing the handshake");
 			return ;
 		}
 
@@ -107,7 +107,7 @@ public class ClientConnection implements Runnable
 	}
 
 	// Exposed method to be used by the broadcaster thread
-	public boolean send(final Event event) throws Exception
+	public boolean send(final Event event)
 	{
 		try
 		{
@@ -166,6 +166,27 @@ public class ClientConnection implements Runnable
 	}
 
 // PRIVATE
+
+    private Event read()
+    {
+        Event event = null;
+
+        try
+        {
+            event = (Event) input_stream_.readObject();
+        }
+        catch (IOException e)
+        {
+            Log.LOG(Log.Level.ERROR, "Error in read: " + e);
+        }
+        catch (ClassNotFoundException e)
+        {
+            Log.LOG(Log.Level.INFO, "Read a Non-Event Object: " + e);
+        }
+
+        return event;
+    }
+
 	private void broadcast(final Event event) throws Exception
 	{
 		try
@@ -180,7 +201,36 @@ public class ClientConnection implements Runnable
 
 	private final boolean handshake()
 	{
-		return true;
+		HandshakeEvent event = Event.create_handshake_event();
+
+		boolean res = send(event);
+
+		if (res == false)
+		{
+			Log.LOG(Log.Level.ERROR, "Error in handshake to send first handshake event shell");
+			return false;
+		}
+
+		event = (HandshakeEvent) read();
+
+		if (event == null)
+		{
+			Log.LOG(Log.Level.ERROR, "Error in handshake, cant read new event");
+			return false;
+		}
+
+		if (event.state() != HandshakeEvent.State.NAMESET)
+		{
+			event.state(HandshakeEvent.State.BYE);
+		}
+		else
+		{
+			event.state(HandshakeEvent.State.OK);
+		}
+
+		res = send(event);
+
+		return res;
 	}
 
 // PRIVATE
@@ -192,7 +242,7 @@ public class ClientConnection implements Runnable
 	final private VocalServer vocal_server_;
 
 	// EventEngine to process events
-	final private EventEngine event_engine_ = new EventEngine();
+	final private ServerEventEngine event_engine_ = new ServerEventEngine();
 
 	// Unique uuid
 	final private UUID uuid_;

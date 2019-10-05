@@ -12,6 +12,21 @@ public class ClientMain
         String port = argv[1];
     	
         Client client = new Client(argv[0], 4242);
+
+        boolean res = client.connect("Elie est un beau petit poisson");
+
+        if (res == false)
+        {
+            Log.LOG(Log.Level.INFO, "handshake didnt work, quitting...");
+            return;
+        }
+        else
+        {
+            Log.LOG(Log.Level.INFO, "handshake WORKS ");
+        }
+
+
+
         client.start_listening_thread();
         client.start_recording_thread();
 	}

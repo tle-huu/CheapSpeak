@@ -2,11 +2,10 @@ import java.util.Vector;
 import java.util.HashMap;
 
 /*
- * Process Events
+ * Abstract class for events processing
  */
-public class EventEngine
+public abstract class EventEngine
 {
-
 
 // PUBLIC
 
@@ -27,31 +26,15 @@ public class EventEngine
 		}
 	}
 
+
 // PRIVATE
+	abstract protected boolean handle_connection(ConnectionEvent event);
 
-	private boolean handle_connection(ConnectionEvent event)
-	{
-		Log.LOG(Log.Level.DEBUG, "handle_connection");
-		return true;
-	}
+	abstract protected boolean handle_disconnection(DisconnectionEvent event);
 
-	private boolean handle_disconnection(DisconnectionEvent event)
-	{
-		Log.LOG(Log.Level.DEBUG, "handle_disconnection");
-		return true;
-	}
+	abstract protected boolean handle_voice(VoiceEvent event);
 
-	private boolean handle_voice(VoiceEvent event)
-	{
-		Log.LOG(Log.Level.DEBUG, "handle_voice");
-		return true;
-	}
-
-	private boolean handle_text(TextEvent event)
-	{
-		Log.LOG(Log.Level.DEBUG, "handle_text");
-		return true;
-	}
+	abstract protected boolean handle_text(TextEvent event);
 
 	// CONST
 	private final int EVENT_QUEUE_SIZE = 1024;

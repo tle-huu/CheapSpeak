@@ -56,9 +56,9 @@ public class Client
     public boolean connect(final String user_name)
     {
         // For testing only
-        return true;
+        boolean res = handshake(user_name);
+        return res;
 
-        // boolean res = handshake(user_name);
         // if (res == false)
         // {
         //     Log.LOG();
@@ -284,6 +284,26 @@ public class Client
     }
 
     private Event read()
+    {
+        Event event = null;
+
+        try
+        {
+            event = (Event) input_stream_.readObject();
+        }
+        catch (IOException e)
+        {
+            Log.LOG(Log.Level.ERROR, "Client error in read: " + e);
+        }
+        catch (ClassNotFoundException e)
+        {
+            Log.LOG(Log.Level.INFO, "Client read a Non-Event Object: " + e);
+        }
+
+        return event;
+    }
+
+    private Event read_noblock()
     {
         Event event = null;
 
