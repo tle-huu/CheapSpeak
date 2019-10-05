@@ -18,6 +18,7 @@ public class Event implements Serializable
 		DISCONNECTION,
 		VOICE,
 		TEXT,
+		HANDSHAKE,
 		MAX_EVENT_TYPE
 	}
 
@@ -58,6 +59,11 @@ public class Event implements Serializable
 	static public TextEvent create_text_event(UUID uuid, String text_packet)
 	{
 		return new TextEvent(uuid, text_packet);
+	}
+
+	static public HandshakeEvent create_handshake_event()
+	{
+		return new HandshakeEvent();
 	}
 
 	public final EventType type()
@@ -156,4 +162,57 @@ class TextEvent extends Event
 	final private String text_packet_;
 }
 
+// Text message
+class HandshakeEvent extends Event
+{
 
+// PUBLIC
+
+	public HandshakeEvent()
+	{
+		super(EventType.HANDSHAKE, null);
+	}
+
+	public void state(State state)
+	{
+		state_ = state;
+	}
+
+	public void user_name(final String name)
+	{
+		user_name_ = name;
+	}
+
+	public final State state()
+	{
+		return state_;
+	}
+
+	public final int magic_word()
+	{
+		return magic_word_;
+	}
+
+	public void magic_word(int word)
+	{
+		magic_word_ = word;
+	}
+
+// PRIVATE
+
+	public enum State
+	{
+		WAITING,
+		NAMESET,
+		OTHERNAME,
+		OK,
+		BYE
+	}
+
+
+	private State state_ = State.WAITING;
+
+	private String user_name_;
+
+	private int magic_word_;
+}

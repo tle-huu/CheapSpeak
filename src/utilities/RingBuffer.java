@@ -25,7 +25,6 @@ public class RingBuffer<T>
         {
             return null;
         }
-        System.out.println("xxx [" +  Integer.toString(buffer_.size()) + "]");
         T first_elem = buffer_.firstElement();
         buffer_.remove(0);
         return first_elem;

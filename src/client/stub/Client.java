@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -22,8 +23,7 @@ import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
 /*
- *
- *
+ * The Client class represents the low-level interface for network communication
  *
  */
 public class Client
@@ -50,6 +50,43 @@ public class Client
             throw e;
         }
         Log.LOG(Log.Level.INFO, "Connected to " + host + " on the port " + port);
+    }
+
+    // WIP
+    public boolean connect(final String user_name)
+    {
+        // For testing only
+        return true;
+
+        // boolean res = handshake(user_name);
+        // if (res == false)
+        // {
+        //     Log.LOG();
+        // }
+
+        // return handshake(user_name);
+    }
+
+    public void start()
+    {
+        start_listening();
+    }
+
+    public Event getEvent()
+    {
+        return event_queue_.pop();
+    }
+
+    public void send_event(Event event)
+    {
+        try
+        {
+            output_stream_.writeObject((Event) event);
+        }
+        catch (IOException e)
+        {
+            Log.LOG(Log.Level.ERROR, "Sending an event of type " + event.type().name() + " failed");
+        }
     }
 
     public void start_recording_thread() throws Exception
@@ -141,7 +178,11 @@ public class Client
                             {
                                 if (socket_.getInputStream().available() > 0)
                                 {
-                                    VoiceEvent event = (VoiceEvent) input_stream_.readObject();
+                                    VoiceEvent event = (VoiceEvent) read();
+                                    if (event == null)
+                                    {
+                                        continue;
+                                    }
 
                                     // Find the channel associated to the datagramn client uuid
                                     AudioChannel channel = audio_channels_.get(event.uuid());
@@ -185,6 +226,155 @@ public class Client
     }
 
 // PRIVATE
+
+    private void start_listening()
+    {
+        try
+        {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run(){
+                    try
+                    {
+                        Log.LOG(Log.Level.INFO, "Listening thread is running");
+                        while (running_.get())
+                        {
+                            try
+                            {
+                                Event event = read();
+
+                                if (event == null)
+                                {
+                                    Log.LOG(Log.Level.WARNING, "Couldnt read new event in listening loop");
+                                    continue;
+                                }
+
+                                boolean res = event_queue_.push(event);
+
+                                if (res == false)
+                                {
+                                    Log.LOG(Log.Level.ERROR, "Could not push into event queue");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Log.LOG(Log.Level.ERROR, "Client listening thread error in while loop: " + e);
+                                break;
+                            }
+                        } 
+
+                    }
+                    catch (Exception e)
+                    {
+                        Log.LOG(Log.Level.ERROR, " Client listening thread global error" + e);
+                        e.printStackTrace();
+                    }
+                    finally
+                    {
+                        Log.LOG(Log.Level.INFO, "Client listening thread shutting down");
+                    }
+                }
+            });
+            thread.start();
+        }
+        catch (Exception e)
+        {
+            Log.LOG(Log.Level.ERROR, "Error in starting listening thread: " + e);
+        }
+    }
+
+    private Event read()
+    {
+        Event event = null;
+
+        try
+        {
+            if (socket_.getInputStream().available() > 0)
+            {
+                event = (Event) input_stream_.readObject();
+            }
+            else
+            {
+                Log.LOG(Log.Level.WARNING, "Client can't read: stream unavailable");
+            }
+        }
+        catch (IOException e)
+        {
+            Log.LOG(Log.Level.ERROR, "Client error in read: " + e);
+        }
+        catch (ClassNotFoundException e)
+        {
+            Log.LOG(Log.Level.INFO, "Client read a Non-Event Object: " + e);
+        }
+
+        return event;
+    }
+
+    // [WIP]
+    private boolean handshake(final String name)
+    {
+        HandshakeEvent event = null;
+
+        int try_counter = 0;
+        while (event == null && try_counter <= 5)
+        {
+            event = (HandshakeEvent) read();
+            ++try_counter;
+        }
+
+        if (try_counter == 5)
+        {
+            Log.LOG(Log.Level.ERROR, "Handshake failed: could not get first HandshakeEvent");
+            return false;
+        }
+
+        // Waiting for an waiting state from server
+        if (event.state() != HandshakeEvent.State.WAITING)
+        {
+            Log.LOG(Log.Level.ERROR, "Handshake event received is in unexpected state {" + event.state().name());
+            return false;
+        }
+
+        // Setting the name and the state to set and sending the event to the server
+        int magic_word = new Random().ints(0, 42133742).findFirst().getAsInt();
+
+        event.user_name(name);
+        event.magic_word(magic_word);
+        event.state(HandshakeEvent.State.NAMESET);
+
+        send_event(event);
+        event = null;
+
+        while (event == null && try_counter <= 5)
+        {
+            event = (HandshakeEvent) read();
+            ++try_counter;
+        }
+
+        // Waiting for the response. If OK, we good to go, otherwise, handhshake failed
+        if (try_counter == 5 || event.state() != HandshakeEvent.State.OK)
+        {
+            Log.LOG(Log.Level.ERROR, "Handshake failed");
+            return false;
+        }
+
+        if (event.magic_word() != magic_word)
+        {
+            Log.LOG(Log.Level.ERROR, "Handshake failed: magic word has been changed");
+            return false;
+        }
+
+        if (try_counter != 2)
+        {
+            Log.LOG(Log.Level.WARNING, "Handshake did not receive a HandshakeEvent at first: {" + Integer.toString(try_counter) + "}");
+        }
+
+        return true;
+    }
+
+// PRIVATE
+
+    private RingBuffer<Event>           event_queue_ = new RingBuffer<Event>();
 
     private HashMap<UUID, AudioChannel> audio_channels_ = new HashMap<UUID, AudioChannel>();
 
