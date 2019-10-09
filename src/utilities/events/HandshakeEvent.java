@@ -27,6 +27,16 @@ public class HandshakeEvent extends Event
 		userName_ = name;
 	}
 
+	public void magicWord(final int word)
+	{
+		magicWord_ = word;
+	}
+
+	public String userName()
+	{
+		return userName_;
+	}
+
 	public final State state()
 	{
 		return state_;
@@ -37,10 +47,6 @@ public class HandshakeEvent extends Event
 		return magicWord_;
 	}
 
-	public void magicWord(int word)
-	{
-		magicWord_ = word;
-	}
 
 	public enum State
 	{
@@ -48,6 +54,7 @@ public class HandshakeEvent extends Event
 		NAMESET,
 		OTHERNAME,
 		OK,
+		LISTENING,
 		BYE;
 	}
 

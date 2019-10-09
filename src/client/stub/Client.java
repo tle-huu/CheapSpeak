@@ -78,6 +78,11 @@ public class Client
         // return handshake(user_name);
     }
 
+    public void disconnect()
+    {
+        running_.compareAndSet(true, false);
+    }
+
     public void start()
     {
         start_listening();
@@ -400,6 +405,13 @@ public class Client
         {
             Log.LOG(Log.Level.WARNING, "Handshake did not receive a HandshakeEvent at first: {" + Integer.toString(try_counter) + "}");
         }
+
+        // Starting listening thread
+        start();
+
+        // Notifying server that we are ready to listen for incoming events
+        event.state(HandshakeEvent.State.LISTENING);
+        send_event(event);
 
         return true;
     }

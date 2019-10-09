@@ -21,7 +21,7 @@ import utilities.events.Event;
 import utilities.infra.Log;
 
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -117,7 +117,7 @@ public class VocalServer
 	}
 
 	// TODO: Bad getter. Should disappear and be turned into a proper exposed API
-	public HashMap<UUID, ClientConnection> clients()
+	public Hashtable<UUID, ClientConnection> clients()
 	{
 		return clients_;
 	}
@@ -156,7 +156,7 @@ public class VocalServer
 // PRIVATE
 
 	// Hash map to store client connections objects
-	private HashMap<UUID, ClientConnection> clients_ = new HashMap<UUID, ClientConnection>();
+	private Hashtable<UUID, ClientConnection> clients_ = new Hashtable<UUID, ClientConnection>();
 	public final ReentrantLock 				clients_mutex_ = new ReentrantLock();
 
 	// Shared ring buffer for broadcaster and client connections communication

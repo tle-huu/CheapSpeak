@@ -17,8 +17,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
 
 import utilities.Datagram;
-import utilities.events.Event;
-import utilities.events.HandshakeEvent;
+import utilities.events.*;
 import utilities.infra.Log;
 
 import javax.sound.sampled.SourceDataLine;
@@ -30,7 +29,7 @@ import javax.sound.sampled.SourceDataLine;
  *
  */
 
-public class ClientConnection implements Runnable
+public class ClientConnection implements Runnable, EventEngine
 {
 
 // PUBLIC
@@ -63,6 +62,12 @@ public class ClientConnection implements Runnable
 
 		boolean accepted = handshake();
 
+		// notify others
+		{
+			ConnectionEvent my_connection_event = new ConnectionEvent(uuid_, "Salon de the", user_name_);
+			broadcast(my_connection_event);
+		}
+
 		if (accepted == false)
 		{
 			Log.LOG(Log.Level.ERROR, "Error while performing the handshake");
@@ -89,7 +94,7 @@ public class ClientConnection implements Runnable
 						event.uuid(uuid_);
 
 						// Process the event
-						// event_engine_.handle_event(event);
+						handleEvent(event);
 
 						// Pushing to broadcaster thread
 						broadcast(event);
@@ -127,6 +132,32 @@ public class ClientConnection implements Runnable
 			return false;
 		}
 	}
+
+
+	public boolean handleConnection(ConnectionEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "handleConnection");
+		return true;
+	}
+
+	public boolean handleDisconnection(DisconnectionEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "handleDisconnectionEvent: " + event.userName() + " disconnected");
+		return true;
+	}
+
+	public boolean handleVoice(VoiceEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "handleVoice");
+		return true;
+	}
+
+	public boolean handleText(TextEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "handleText from " + event.userName() + ": " + event.textPacket());
+		return true;
+	}
+
 
 	public int port()
 	{
@@ -195,7 +226,7 @@ public class ClientConnection implements Runnable
         return event;
     }
 
-	private void broadcast(final Event event) throws Exception
+	private void broadcast(final Event event)
 	{
 		try
 		{
@@ -207,10 +238,11 @@ public class ClientConnection implements Runnable
 		}
 	}
 
-	private final boolean handshake()
+	private boolean handshake()
 	{
 		HandshakeEvent event = new HandshakeEvent();
 
+		// Send empty shell of HandshakeEvent to be filled by client
 		boolean res = send(event);
 
 		if (res == false)
@@ -219,6 +251,7 @@ public class ClientConnection implements Runnable
 			return false;
 		}
 
+		// Read Client answer
 		event = (HandshakeEvent) read();
 
 		if (event == null)
@@ -227,6 +260,7 @@ public class ClientConnection implements Runnable
 			return false;
 		}
 
+		// The client should have set the state to nameset
 		if (event.state() != HandshakeEvent.State.NAMESET)
 		{
 			event.state(HandshakeEvent.State.BYE);
@@ -236,12 +270,43 @@ public class ClientConnection implements Runnable
 			event.state(HandshakeEvent.State.OK);
 		}
 
+		// Setting user_name;
+		user_name_ = event.userName();
 		res = send(event);
+
+		// Read Client answer
+		event = (HandshakeEvent) read();
+
+		if (event.state() == HandshakeEvent.State.LISTENING)
+		{
+			send_server_current_status();
+		}
+		else
+		{
+			res = false;
+		}
 
 		return res;
 	}
 
+	private boolean send_server_current_status()
+	{
+        for (ClientConnection client_conn : vocal_server_.clients().values())
+        {
+			ConnectionEvent connection_event = new ConnectionEvent(uuid_, "Salon de the", client_conn.user_name_);
+            send(connection_event);
+        }
+        return true;
+	}
+
 // PRIVATE
+
+	// Name gotten from handshake
+	private String user_name_;
+
+	// Current room
+	// private String currentRoom_;
+
 
 	// socket connection to the client
 	final private Socket socket_;
