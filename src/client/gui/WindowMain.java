@@ -7,11 +7,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -52,6 +52,15 @@ public class WindowMain extends JFrame implements EventEngine
 		this.setTitle("Window Main");
 		this.setSize(width_, height_);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.addWindowListener(new WindowAdapter() {
+            //I skipped unused callbacks for readability
+
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                
+            }
+        });
 		this.setLocationRelativeTo(null);
 		
 		// Set the resize event
@@ -65,7 +74,7 @@ public class WindowMain extends JFrame implements EventEngine
 		this.setContentPane(panelConnect_);
 	}
 	
-	public static List<Room> getRooms()
+	public static List<Room> rooms()
 	{
 		return Rooms_;
 	}
@@ -79,6 +88,57 @@ public class WindowMain extends JFrame implements EventEngine
 	{
 		this.setVisible(true);
 		eventListener();
+	}
+	
+	@Override
+	public boolean handleConnection(ConnectionEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "Connection event received");
+		
+		// Get the room and the username
+		String room = event.room();
+		String pseudo = event.userName();
+		
+		// Add the new client
+		addClient(room, pseudo);
+		
+		return true;
+	}
+
+	@Override
+	public boolean handleDisconnection(DisconnectionEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "Disconnection event received");
+		
+		// Get the room and the username
+		String pseudo = event.userName();
+		
+		// Remove the client
+		removeClient(pseudo);
+		
+		return true;
+	}
+
+	@Override
+	public boolean handleVoice(VoiceEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "Voice event received");
+		return true;
+	}
+
+	@Override
+	public boolean handleText(TextEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "Text event received");
+		
+		// Get the username and the message
+		String pseudo = event.userName();
+		String txt = event.textPacket();
+		
+		// Push the message on the panel
+		panelMain_.panelChat().pushMessage(txt, pseudo);
+		
+		return true;
 	}
 	
 // PRIVATE METHODS
@@ -108,14 +168,32 @@ public class WindowMain extends JFrame implements EventEngine
 		this.setJMenuBar(menuBar_);
 	}
 	
+	private void exit()
+	{
+		// Send the disconnection message to the server
+		Event event = new DisconnectionEvent(null, Pseudo_);
+		if (client_ != null)
+		{
+			client_.send_event(event);
+		}
+		
+		// End the connection
+		listening_ = false;
+		client_.disconnect();
+		client_ = null;
+		
+		// End the app
+		System.exit(0);
+	}
+	
 	private void addRoom(String room)
 	{
 		// Add the room to the list
-		Room r = new Room(room);
-		Rooms_.add(r);
+		Room newRoom = new Room(room);
+		Rooms_.add(newRoom);
 		
 		// Update the tree
-		panelMain_.tree().addRoom(r);
+		panelMain_.tree().addRoom(newRoom);
 	}
 	
 	private void removeRoom(String room)
@@ -195,63 +273,12 @@ public class WindowMain extends JFrame implements EventEngine
 				Event event = client_.getEvent();
 				if (event != null)
 				{
-					handleEvent(event);
+					boolean hasWorked = handleEvent(event);
 				}
 			}
 			listening_ = false;
 			Log.LOG(Log.Level.INFO, "Stop listening");
 		}
-	}
-	
-	@Override
-	public boolean handleConnection(ConnectionEvent event)
-	{
-		Log.LOG(Log.Level.INFO, "Connection event received");
-		
-		// Get the room and the username
-		String room = event.room();
-		String pseudo = event.userName();
-		
-		// Add the new client
-		addClient(room, pseudo);
-		
-		return true;
-	}
-
-	@Override
-	public boolean handleDisconnection(DisconnectionEvent event)
-	{
-		Log.LOG(Log.Level.INFO, "Disconnection event received");
-		
-		// Get the room and the username
-		String pseudo = event.userName();
-		
-		// Remove the client
-		removeClient(pseudo);
-		
-		return true;
-	}
-
-	@Override
-	public boolean handleVoice(VoiceEvent event)
-	{
-		Log.LOG(Log.Level.INFO, "Voice event received");
-		return true;
-	}
-
-	@Override
-	public boolean handleText(TextEvent event)
-	{
-		Log.LOG(Log.Level.INFO, "Text event received");
-		
-		// Get the username and the message
-		String pseudo = event.userName();
-		String txt = event.textPacket();
-		
-		// Push the message on the panel
-		panelMain_.panelChat().pushMessage(txt, pseudo);
-		
-		return true;
 	}
 
 // INNER CLASSES
@@ -317,15 +344,23 @@ public class WindowMain extends JFrame implements EventEngine
 	        {
 	        	e1.printStackTrace();
 	        }
+			
 			// Switch to the main panel
 			if (isConnected)
 			{
+				// Set the pseudo
 				Pseudo_ = pseudo;
+				
+				// Switch to the main panel
 				panelMain_ = new PanelMain(width_, new SendListener());
 				setContentPane(panelMain_);
 				revalidate();
+				
+				// Reset the connect/disconnect buttons
 				menuBar_.connect().setEnabled(false);
 				menuBar_.disconnect().setEnabled(true);
+				
+				// Start listening to the server
 				lock_.lock();
 				cond_.signal();
 				lock_.unlock();
@@ -338,21 +373,26 @@ public class WindowMain extends JFrame implements EventEngine
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// Switch to the connection panel
-			listening_ = false;
-			client_ = null;
-			panelMain_ = null;
-			setContentPane(panelConnect_);
-			revalidate();
-			menuBar_.connect().setEnabled(true);
-			menuBar_.disconnect().setEnabled(false);
-			
-			// Send the message to the server
+			// Send the disconnection message to the server
 			Event event = new DisconnectionEvent(null, Pseudo_);
 			if (client_ != null)
 			{
 				client_.send_event(event);
 			}
+			
+			// End the connection
+			listening_ = false;
+			client_.disconnect();
+			client_ = null;
+			
+			// Switch to the connection panel
+			panelMain_ = null;
+			setContentPane(panelConnect_);
+			revalidate();
+			
+			// Reset the connect/disconnect buttons
+			menuBar_.connect().setEnabled(true);
+			menuBar_.disconnect().setEnabled(false);
 		}
 	}
 	
@@ -383,13 +423,21 @@ public class WindowMain extends JFrame implements EventEngine
 		}
 	}
 	
+	class ExitAdapter extends WindowAdapter
+	{
+        @Override
+        public void windowClosing(WindowEvent e)
+        {
+            exit();
+        }
+    }
+	
 	class ExitListener implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// ...
-			System.exit(0);
+			exit();
 		}
 	}
 	
