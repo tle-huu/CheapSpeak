@@ -7,17 +7,27 @@ import utilities.SoundPacket;
 // Voice packet message
 public class VoiceEvent extends Event
 {
-	public VoiceEvent(UUID uuid, SoundPacket sound_packet)
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3130208610591615987L;
+
+// PUBLIC METHODS
+	
+	// Constructor
+	public VoiceEvent(UUID uuid, SoundPacket soundPacket)
 	{
 		super(EventType.VOICE, uuid);
-		sound_packet_ = sound_packet;
+		soundPacket_ = soundPacket;
 	}
 
-	public final SoundPacket sound_packet()
+	public final SoundPacket soundPacket()
 	{
-		return sound_packet_;
+		return soundPacket_;
 	}
 
-// PRIVATE
-	final private SoundPacket sound_packet_;
+// PRIVATE ATTRIBUTE
+	
+	final private SoundPacket soundPacket_;
 }

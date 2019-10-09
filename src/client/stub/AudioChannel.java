@@ -58,7 +58,7 @@ public class AudioChannel extends Thread
                     VoiceEvent voice_event = queue_.get(0);
                     queue_.remove(0);
 
-                    SoundPacket sound_packet = voice_event.sound_packet();
+                    SoundPacket sound_packet = voice_event.soundPacket();
 
                     // Playing random noise if the packet does not contain any data
                     if (sound_packet == null)

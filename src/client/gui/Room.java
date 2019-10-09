@@ -29,9 +29,9 @@ public class Room
 		clients_.add(client);
 	}
 	
-	public void removeClient(String client)
+	public boolean removeClient(String client)
 	{
-		clients_.remove(client);
+		return clients_.remove(client);
 	}
 	
 	@Override

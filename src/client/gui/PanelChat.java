@@ -10,6 +10,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -88,7 +89,7 @@ public class PanelChat extends JPanel
 		return jta_;
 	}
 	
-	public void pushMessage(String txt, Timestamp ts, String pseudo)
+	public void pushMessage(String txt, String pseudo)
 	{
 		// Break if the message is empty
 		if (txt.isEmpty())
@@ -117,6 +118,8 @@ public class PanelChat extends JPanel
 		message.setText(txt);
 		
 		// Set the timestamp label
+		Date date = new Date();
+		Timestamp ts = new Timestamp(date.getTime());
 		String time = SDF.format(ts);
 		timestamp.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		timestamp.setFont(fontText_);

@@ -89,7 +89,7 @@ public class ClientConnection implements Runnable
 						event.uuid(uuid_);
 
 						// Process the event
-						event_engine_.handle_event(event);
+						// event_engine_.handle_event(event);
 
 						// Pushing to broadcaster thread
 						broadcast(event);
@@ -209,7 +209,7 @@ public class ClientConnection implements Runnable
 
 	private final boolean handshake()
 	{
-		HandshakeEvent event = Event.create_handshake_event();
+		HandshakeEvent event = new HandshakeEvent();
 
 		boolean res = send(event);
 
@@ -248,9 +248,6 @@ public class ClientConnection implements Runnable
 
 	// Reference to the server
 	final private VocalServer vocal_server_;
-
-	// EventEngine to process events
-	final private ServerEventEngine event_engine_ = new ServerEventEngine();
 
 	// Unique uuid
 	final private UUID uuid_;

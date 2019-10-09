@@ -22,10 +22,15 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import client.stub.Client;
+import utilities.events.ConnectionEvent;
+import utilities.events.DisconnectionEvent;
 import utilities.events.Event;
+import utilities.events.EventEngine;
+import utilities.events.TextEvent;
+import utilities.events.VoiceEvent;
 import utilities.infra.Log;
 
-public class WindowMain extends JFrame
+public class WindowMain extends JFrame implements EventEngine
 {
 	
 	/**
@@ -108,6 +113,7 @@ public class WindowMain extends JFrame
 		// Add the room to the list
 		Room r = new Room(room);
 		Rooms_.add(r);
+		
 		// Update the tree
 		panelMain_.tree().addRoom(r);
 	}
@@ -123,6 +129,7 @@ public class WindowMain extends JFrame
 				break;
 			}
 		}
+		
 		// Update the tree
 		panelMain_.tree().removeRoom(room);
 	}
@@ -138,23 +145,30 @@ public class WindowMain extends JFrame
 				break;
 			}
 		}
+		
 		// Update the tree
 		panelMain_.tree().addClient(room, client);
 	}
 	
-	private void removeClient(String room, String client)
+	private void removeClient(String client)
 	{
 		// Update the room
+		String room = null;
 		for (Room r: Rooms_)
 		{
-			if (r.name().equals(room))
+			boolean isRemoved = r.removeClient(client);
+			if (isRemoved)
 			{
-				r.removeClient(client);
+				room = r.name();
 				break;
 			}
 		}
+		
 		// Update the tree
-		panelMain_.tree().removeClient(room, client);
+		if (room != null)
+		{
+			panelMain_.tree().removeClient(room, client);
+		}
 	}
 
 	private void eventListener()
@@ -179,38 +193,65 @@ public class WindowMain extends JFrame
 			while (listening_ && client_ != null)
 			{
 				Event event = client_.getEvent();
-				handleEvent(event);
+				if (event != null)
+				{
+					handleEvent(event);
+				}
 			}
 			listening_ = false;
 			Log.LOG(Log.Level.INFO, "Stop listening");
 		}
 	}
 	
-	private void handleEvent(Event event)
+	@Override
+	public boolean handleConnection(ConnectionEvent event)
 	{
-		Event.EventType type = event.type();
-		switch (type)
-		{
-			case CONNECTION:
-				Log.LOG(Log.Level.INFO, "Connection event received");
-				break;
-				
-			case DISCONNECTION:
-				Log.LOG(Log.Level.INFO, "Disconnection event received");
-				break;
-				
-			case VOICE:
-				Log.LOG(Log.Level.INFO, "Voice event received");
-				break;
-				
-			case TEXT:
-				Log.LOG(Log.Level.INFO, "Text event received");
-				break;
-				
-			default:
-				Log.LOG(Log.Level.INFO, "Unrecognize type of event: " + type);
-				break;
-		}
+		Log.LOG(Log.Level.INFO, "Connection event received");
+		
+		// Get the room and the username
+		String room = event.room();
+		String pseudo = event.userName();
+		
+		// Add the new client
+		addClient(room, pseudo);
+		
+		return true;
+	}
+
+	@Override
+	public boolean handleDisconnection(DisconnectionEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "Disconnection event received");
+		
+		// Get the room and the username
+		String pseudo = event.userName();
+		
+		// Remove the client
+		removeClient(pseudo);
+		
+		return true;
+	}
+
+	@Override
+	public boolean handleVoice(VoiceEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "Voice event received");
+		return true;
+	}
+
+	@Override
+	public boolean handleText(TextEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "Text event received");
+		
+		// Get the username and the message
+		String pseudo = event.userName();
+		String txt = event.textPacket();
+		
+		// Push the message on the panel
+		panelMain_.panelChat().pushMessage(txt, pseudo);
+		
+		return true;
 	}
 
 // INNER CLASSES
@@ -297,7 +338,7 @@ public class WindowMain extends JFrame
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// ...
+			// Switch to the connection panel
 			listening_ = false;
 			client_ = null;
 			panelMain_ = null;
@@ -305,6 +346,13 @@ public class WindowMain extends JFrame
 			revalidate();
 			menuBar_.connect().setEnabled(true);
 			menuBar_.disconnect().setEnabled(false);
+			
+			// Send the message to the server
+			Event event = new DisconnectionEvent(null, Pseudo_);
+			if (client_ != null)
+			{
+				client_.send_event(event);
+			}
 		}
 	}
 	
@@ -319,22 +367,15 @@ public class WindowMain extends JFrame
 			// Reset the focus on the text area
 			panelChat.textArea().grabFocus();
 			
-			// Push the message on the panel
+			// Get the text field and reset it
 			String txt = panelChat.textArea().getText();
 			panelChat.textArea().setText("");
-			Date date = new Date();
-			Timestamp ts = new Timestamp(date.getTime());
 			
-			String fakePseudo = Pseudo_;
-			if (++activeRoomIndex_ % 2 == 0)
-			{
-				fakePseudo = "Terry la louve";
-			}
-			
-			panelChat.pushMessage(txt, ts, fakePseudo);
+			// Push the message on the panel
+			panelChat.pushMessage(txt, Pseudo_);
 			
 			// Send the message to the server
-			Event event = Event.create_text_event(null, txt);
+			Event event = new TextEvent(null, Pseudo_, txt);
 			if (client_ != null)
 			{
 				client_.send_event(event);
@@ -425,5 +466,5 @@ public class WindowMain extends JFrame
 	// State
 	private static List<Room> Rooms_ = new ArrayList<Room>();
 	private int    activeRoomIndex_ = -1;
-	private static String Pseudo_ = "_default_";
+	private static String Pseudo_ = "_default";
 }

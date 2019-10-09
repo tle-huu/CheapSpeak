@@ -4,8 +4,14 @@ package utilities.events;
 public class HandshakeEvent extends Event
 {
 
-// PUBLIC
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1809464133655976084L;
+	
+// PUBLIC METHODS
 
+	// Constructor
 	public HandshakeEvent()
 	{
 		super(EventType.HANDSHAKE, null);
@@ -16,9 +22,9 @@ public class HandshakeEvent extends Event
 		state_ = state;
 	}
 
-	public void user_name(final String name)
+	public void userName(final String name)
 	{
-		user_name_ = name;
+		userName_ = name;
 	}
 
 	public final State state()
@@ -26,17 +32,15 @@ public class HandshakeEvent extends Event
 		return state_;
 	}
 
-	public final int magic_word()
+	public final int magicWord()
 	{
-		return magic_word_;
+		return magicWord_;
 	}
 
-	public void magic_word(int word)
+	public void magicWord(int word)
 	{
-		magic_word_ = word;
+		magicWord_ = word;
 	}
-
-// PRIVATE
 
 	public enum State
 	{
@@ -44,13 +48,14 @@ public class HandshakeEvent extends Event
 		NAMESET,
 		OTHERNAME,
 		OK,
-		BYE
+		BYE;
 	}
 
-
+// PRIVATE ATTRIBUTES
+	
 	private State state_ = State.WAITING;
 
-	private String user_name_;
+	private String userName_;
 
-	private int magic_word_;
+	private int magicWord_;
 }

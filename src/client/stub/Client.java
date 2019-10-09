@@ -370,8 +370,8 @@ public class Client
         // Setting the name and the state to set and sending the event to the server
         int magic_word = new Random().ints(0, 42133742).findFirst().getAsInt();
 
-        event.user_name(name);
-        event.magic_word(magic_word);
+        event.userName(name);
+        event.magicWord(magic_word);
         event.state(HandshakeEvent.State.NAMESET);
         
         send_event(event);
@@ -390,7 +390,7 @@ public class Client
             return false;
         }
 
-        if (event.magic_word() != magic_word)
+        if (event.magicWord() != magic_word)
         {
             Log.LOG(Log.Level.ERROR, "Handshake failed: magic word has been changed");
             return false;

@@ -6,20 +6,33 @@ import java.util.UUID;
 public class TextEvent extends Event
 {
 	
-// PUBLIC
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2870663892989407774L;
 	
-	public TextEvent(UUID uuid, String text_packet)
+// PUBLIC METHODS
+
+	// Constructor
+	public TextEvent(UUID uuid, String userName, String textPacket)
 	{
 		super(EventType.TEXT, uuid);
-		text_packet_ = text_packet;
+		userName_ = userName;
+		textPacket_ = textPacket;
+	}
+	
+	public String userName()
+	{
+		return userName_;
 	}
 	
 	public String textPacket()
 	{
-		return text_packet_;
+		return textPacket_;
 	}
 
-// PRIVATE
+// PRIVATE ATTRIBUTES
 	
-	final private String text_packet_;
+	private final String userName_;
+	private final String textPacket_;
 }
