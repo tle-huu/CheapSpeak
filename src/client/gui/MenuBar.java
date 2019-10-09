@@ -10,20 +10,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
-import client.gui.WindowMain.ChangePseudoListener;
-import client.gui.WindowMain.ConnectListener;
-import client.gui.WindowMain.ContributeListener;
-import client.gui.WindowMain.DisconnectListener;
-import client.gui.WindowMain.ExitListener;
-import client.gui.WindowMain.FullscreenListener;
-import client.gui.WindowMain.ShortcutsListener;
-import client.gui.WindowMain.ThemeListener;
-
 public class MenuBar extends JMenuBar
 {
 	
-// PUBLIC METHODS
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6640246405752025617L;
 	
+// PUBLIC METHODS
+
 	// Constructor
 	public MenuBar()
 	{

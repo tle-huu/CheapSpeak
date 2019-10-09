@@ -8,28 +8,43 @@ public class Log
 {
 	public enum Level
 	{
-		INFO,
-		WARNING,
-		ERROR,
-		FATAL,
-		DEBUG
+	
+	// INSTANCES
+		
+		INFO("[INFO]"),
+		WARNING("[WARNING]"),
+		ERROR("[ERROR]"),
+		FATAL("[FATAL]"),
+		DEBUG("[DEBUG]");
+		
+	// PRIVATE CONSTRUCTOR
+		
+		private Level(String prefix)
+		{
+			prefix_ = prefix;
+		}
+		
+	// PUBLIC METHOD
+		
+		@Override
+		public String toString()
+		{
+			return prefix_;
+		}
+		
+	// PRIVATE ATTRIBUTE
+		
+		private String prefix_;
+		
 	};
 
-	// TODO: Should know where to log the message (standard output or file])
-	public static void LOG(Level level, String message)
+	// TODO: Should know where to log the message (standard output or file)
+	public static void LOG(Level level, Object message)
 	{
-		System.out.println(prefixed[level.ordinal()]  + " " + message);
+		System.out.println(level + " " + message.toString());
 	}
 
-
 // PRIVATE
-	final static private String[] prefixed = {
-		"[INFO]",
-		"[WARNING]",
-		"[ERROR]",
-		"[FATAL]",
-		"[DEBUG]"
-	} ;
 
 	private final static String client_log_file_ = "";
 	private final static String server_log_file_ = "";

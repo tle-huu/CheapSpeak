@@ -9,6 +9,11 @@ import javax.swing.tree.DefaultTreeModel;
 public class TreeRoom extends JTree
 {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4466274080800189880L;
+	
 // PUBLIC METHODS
 	
 	// Constructor
@@ -98,6 +103,6 @@ public class TreeRoom extends JTree
 	
 // PRIVATE ATTRIBUTES
 	
-	private DefaultTreeModel model_;
+	private DefaultTreeModel       model_;
 	private DefaultMutableTreeNode root_;
 }

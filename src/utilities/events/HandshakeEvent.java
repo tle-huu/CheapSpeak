@@ -1,3 +1,5 @@
+package utilities.events;
+
 // Text message
 public class HandshakeEvent extends Event
 {

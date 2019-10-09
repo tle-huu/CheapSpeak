@@ -6,24 +6,28 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.text.NumberFormat;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import client.gui.WindowMain.ConnectListener;
+import utilities.infra.Log;
 
 public class PanelConnect extends JPanel
 {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 926182585022582028L;
+
 // PUBLIC METHODS
 
 	// Constructor
-	public PanelConnect(ConnectListener connectListener)
+	public PanelConnect(ActionListener connectListener)
 	{
 		super();
 		
@@ -60,7 +64,7 @@ public class PanelConnect extends JPanel
 		pseudoLabel_.setHorizontalAlignment(JLabel.CENTER);
 		pseudoLabel_.setPreferredSize(new Dimension(250, 60));
 		pseudoLabel_.setFont(fontLabel);
-		pseudo_ = new JTextField();
+		pseudo_ = new JTextField("xX_Anonymous_Xx");
 		pseudo_.setPreferredSize(new Dimension(250, 30));
 		pseudo_.setFont(fontField);
 		pseudoPanel.add(pseudoLabel_, BorderLayout.NORTH);
@@ -78,7 +82,7 @@ public class PanelConnect extends JPanel
 		ipAddressLabel_.setHorizontalAlignment(JLabel.CENTER);
 		ipAddressLabel_.setPreferredSize(new Dimension(250, 60));
 		ipAddressLabel_.setFont(fontLabel);
-		ipAddress_ = new JTextField();
+		ipAddress_ = new JTextField("127.0.0.1");
 		ipAddress_.setPreferredSize(new Dimension(250, 30));
 		ipAddress_.setFont(fontField);
 		ipAddressPanel.add(ipAddressLabel_, BorderLayout.NORTH);
@@ -96,7 +100,7 @@ public class PanelConnect extends JPanel
 		portLabel_.setHorizontalAlignment(JLabel.CENTER);
 		portLabel_.setPreferredSize(new Dimension(250, 60));
 		portLabel_.setFont(fontLabel);
-		port_ = new JFormattedTextField(NumberFormat.getIntegerInstance());
+		port_ = new JTextField("4242");
 		port_.setPreferredSize(new Dimension(250, 30));
 		port_.setFont(fontField);
 		portPanel.add(portLabel_, BorderLayout.NORTH);
@@ -135,12 +139,29 @@ public class PanelConnect extends JPanel
 	
 	public int port()
 	{
-		return Integer.valueOf(port_.getText()).intValue();
+		int port;
+		try
+		{
+			port = Integer.valueOf(port_.getText()).intValue();
+			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
+		}
+		catch(NumberFormatException e)
+		{  
+			return -1;  
+		}
+		return port;
 	}
 	
 // PRIVATE ATTRIBUTES
 	
-	private JLabel title_, pseudoLabel_, ipAddressLabel_, portLabel_;
-	private JTextField pseudo_, ipAddress_, port_;
+	private JLabel title_, 
+				   pseudoLabel_, 
+				   ipAddressLabel_, 
+				   portLabel_;
+	
+	private JTextField pseudo_, 
+					   ipAddress_, 
+					   port_;
+	
 	private JButton connectButton_;
 }

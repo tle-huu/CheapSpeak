@@ -1,9 +1,10 @@
-package utilities;
+package utilities.events;
 
 import java.io.Serializable;
 import java.util.Date;  
 import java.util.UUID;
 
+import utilities.SoundPacket;
 import utilities.infra.Log;
 
 /*
@@ -15,6 +16,11 @@ import utilities.infra.Log;
 public class Event implements Serializable
 {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8464650833482806221L;
+
 // PUBLIC
 	public enum EventType
 	{
@@ -23,7 +29,7 @@ public class Event implements Serializable
 		VOICE,
 		TEXT,
 		HANDSHAKE,
-		MAX_EVENT_TYPE
+		MAX_EVENT_TYPE;
 	}
 
 	// Factory function for events creation
@@ -86,7 +92,8 @@ public class Event implements Serializable
 	}
 
 // PROTECTED
-	// Constructor is private and an Event should be cted with the create_event static function
+	
+	// Constructor is private and an Event should be created with the create_event static function
 	protected Event(EventType event_type, UUID uuid)
 	{
 		type_ = event_type;
@@ -104,12 +111,12 @@ public class Event implements Serializable
 	// UUID of the event sender
 	protected UUID uuid_;
 
-
 // PRIVATE
+	
 	private Event()
 	{
 		Log.LOG(Log.Level.ERROR, "Creation of an unknown Event type");
-		assert false : "Unknown Event Type in Event creation factory function";
+		assert false: "Unknown Event Type in Event creation factory function";
 		type_ = EventType.MAX_EVENT_TYPE;
 		uuid_ = null;
 	}

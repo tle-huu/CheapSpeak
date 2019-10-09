@@ -16,6 +16,11 @@ import javax.swing.JWindow;
 public class SplashScreen extends JWindow
 {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 9207185183823731551L;
+
 // PUBLIC METHODS
 	
 	// Constructor
@@ -28,7 +33,7 @@ public class SplashScreen extends JWindow
 		this.setLocationRelativeTo(null);
 		
 		// Set the background
-		/*try
+		try
 		{
 			Image img = ImageIO.read(new File("splash_screen.png"));
 			PanelBackground pbg = new PanelBackground(img);
@@ -38,7 +43,7 @@ public class SplashScreen extends JWindow
 		{
 			e.printStackTrace();
 		}
-		*/
+		
 		// Set the bar
 		bar_ = new JProgressBar();
 		bar_.setMinimum(0);
@@ -85,6 +90,8 @@ public class SplashScreen extends JWindow
 					e.printStackTrace();
 				}
 			}
+			// Close the splash screen
+			setVisible(false);
 			// Display the main frame
 			wm_.start();
 		}
@@ -92,7 +99,8 @@ public class SplashScreen extends JWindow
 	
 // PRIVATE ATTRIBUTES
 	
-	private WindowMain wm_;
+	private WindowMain   wm_;
 	private JProgressBar bar_;
+	
 	private final int LAUNCHTIME = 1; // in seconds
 }

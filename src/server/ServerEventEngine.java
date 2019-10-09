@@ -1,3 +1,10 @@
+package server;
+
+import utilities.events.ConnectionEvent;
+import utilities.events.DisconnectionEvent;
+import utilities.events.TextEvent;
+import utilities.events.VoiceEvent;
+import utilities.infra.Log;
 
 public class ServerEventEngine extends EventEngine
 {

@@ -25,6 +25,10 @@ import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
 import utilities.Datagram;
+import utilities.events.Event;
+import utilities.events.HandshakeEvent;
+import utilities.events.VoiceEvent;
+import utilities.RingBuffer;
 import utilities.SoundPacket;
 import utilities.infra.Log;
 
@@ -44,18 +48,19 @@ public class Client
             socket_ = new Socket(InetAddress.getByName(host), port);
             input_stream_ = new ObjectInputStream(socket_.getInputStream());
             output_stream_ = new ObjectOutputStream(socket_.getOutputStream());
+            Log.LOG(Log.Level.INFO, "Connected to " + host + " on port " + port);
         }
         catch (UnknownHostException e)
         {
-            e.printStackTrace();
+        	e.printStackTrace();
+        	throw e;
         }
         catch (IOException e)
         {
             Log.LOG(Log.Level.ERROR, "Error instanciating Client: "  + e.getMessage());
-            assert false : "Error constructing Client";
+            assert false: "Error constructing Client";
             throw e;
         }
-        Log.LOG(Log.Level.INFO, "Connected to " + host + " on the port " + port);
     }
 
     // WIP
@@ -304,6 +309,7 @@ public class Client
         catch (ClassNotFoundException e)
         {
             Log.LOG(Log.Level.INFO, "Client read a Non-Event Object: " + e);
+            e.printStackTrace();
         }
 
         return event;
@@ -347,13 +353,13 @@ public class Client
             event = (HandshakeEvent) read();
             ++try_counter;
         }
-
+        
         if (try_counter == 5)
         {
             Log.LOG(Log.Level.ERROR, "Handshake failed: could not get first HandshakeEvent");
             return false;
         }
-
+        
         // Waiting for an waiting state from server
         if (event.state() != HandshakeEvent.State.WAITING)
         {
@@ -367,10 +373,10 @@ public class Client
         event.user_name(name);
         event.magic_word(magic_word);
         event.state(HandshakeEvent.State.NAMESET);
-
+        
         send_event(event);
         event = null;
-
+        
         while (event == null && try_counter <= 5)
         {
             event = (HandshakeEvent) read();
@@ -414,8 +420,8 @@ public class Client
     private AtomicBoolean running_ = new AtomicBoolean(true);
 
     // Voice IO
-    private Microphone  microphone_ = new Microphone();
-    private Speaker     speaker_ = new Speaker();
+    private Microphone microphone_ = new Microphone();
+    private Speaker    speaker_ = new Speaker();
 
 	// Input Stream
 	private ObjectInputStream input_stream_ ;

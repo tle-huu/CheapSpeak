@@ -17,6 +17,8 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
 
 import utilities.Datagram;
+import utilities.events.Event;
+import utilities.events.HandshakeEvent;
 import utilities.infra.Log;
 
 import javax.sound.sampled.SourceDataLine;

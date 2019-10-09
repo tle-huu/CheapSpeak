@@ -1,5 +1,12 @@
+package server;
+
 import java.util.Vector;
-import java.util.HashMap;
+
+import utilities.events.ConnectionEvent;
+import utilities.events.DisconnectionEvent;
+import utilities.events.Event;
+import utilities.events.TextEvent;
+import utilities.events.VoiceEvent;
 
 /*
  * Abstract class for events processing

@@ -1,4 +1,8 @@
+package utilities.events;
+
 import java.util.UUID;
+
+import utilities.SoundPacket;
 
 // Voice packet message
 public class VoiceEvent extends Event

@@ -1,5 +1,6 @@
 package client.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -8,21 +9,29 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import client.stub.Client;
-import utilities.Event;
+import utilities.events.Event;
 import utilities.infra.Log;
 
 public class WindowMain extends JFrame
 {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3724351605438242811L;
 	
 // PUBLIC METHODS
 	
@@ -165,22 +174,43 @@ public class WindowMain extends JFrame
 			{
 				lock_.unlock();
 			}
-			System.out.println("Start listening");
 			Log.LOG(Log.Level.INFO, "Start listening");
 			listening_ = true;
-			while (listening_)
+			while (listening_ && client_ != null)
 			{
-				//Event event = client_.getEvent();
-				//handleEvent(event);
-				//Log.LOG(Log.Level.INFO, "Listening");
+				Event event = client_.getEvent();
+				handleEvent(event);
 			}
+			listening_ = false;
 			Log.LOG(Log.Level.INFO, "Stop listening");
 		}
 	}
 	
-	private void handleEvent(Event e)
+	private void handleEvent(Event event)
 	{
-		
+		Event.EventType type = event.type();
+		switch (type)
+		{
+			case CONNECTION:
+				Log.LOG(Log.Level.INFO, "Connection event received");
+				break;
+				
+			case DISCONNECTION:
+				Log.LOG(Log.Level.INFO, "Disconnection event received");
+				break;
+				
+			case VOICE:
+				Log.LOG(Log.Level.INFO, "Voice event received");
+				break;
+				
+			case TEXT:
+				Log.LOG(Log.Level.INFO, "Text event received");
+				break;
+				
+			default:
+				Log.LOG(Log.Level.INFO, "Unrecognize type of event: " + type);
+				break;
+		}
 	}
 
 // INNER CLASSES
@@ -190,13 +220,24 @@ public class WindowMain extends JFrame
 		@Override
 		public void componentResized(ComponentEvent componentEvent)
 	    {
-	        if (panelMain_ != null)
+	        // Set the size of the message boxes
+			if (panelMain_ != null)
 	        {
-				JPanel messagePanel = panelMain_.panelChat().messagePanel();
-				int width = Math.max((int) ((float) messagePanel.getWidth() * 0.75f), 117);
+	        	JPanel messagePanel = panelMain_.panelChat().messagePanel();
+	        	int width = panelMain_.panelChat().getWidth();
+				int padding = (int) ((float) width * 0.25f);
 	        	for (Component pan: messagePanel.getComponents())
 		        {
-		    		int height = (int) pan.getPreferredSize().getHeight();
+	        		Color panColor = pan.getBackground();
+	        		if (panColor.equals(Color.WHITE))
+	        		{
+	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, Color.YELLOW));
+	        		}
+	        		else
+	        		{
+	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, Color.YELLOW));
+	        		}
+	        		int height = (int) pan.getPreferredSize().getHeight();
 		    		pan.setMaximumSize(new Dimension(width, height));
 		        }
 	        }
@@ -208,28 +249,38 @@ public class WindowMain extends JFrame
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			/*String host = panelConnect_.host();
+			// Get host, port and pseudo
+			String host = panelConnect_.host();
 			int port = panelConnect_.port();
-			// Create a client to connect to the server
+			String pseudo = panelConnect_.pseudo();
+			
+			// Check if the port is correct
+			if (port < 0 || port >= 65536)
+			{
+				// ...
+				return ;
+			}
+			
+			// Create a client and connect to the server
+			boolean isConnected = false;
 			try
 			{
 				client_ = new Client(host, port);
+				isConnected = client_.connect(pseudo);
 			}
 			catch (UnknownHostException e1)
 	        {
-	            e1.printStackTrace();
+	            Log.LOG(Log.Level.ERROR, "The host " + host + " is unknown");
 	        }
 	        catch (IOException e1)
 	        {
 	        	e1.printStackTrace();
 	        }
-			String pseudo = panelConnect_.pseudo();
-			Boolean isConnected = client_.connect(pseudo);
-			System.out.println(isConnected);
-			if (isConnected)*/
+			// Switch to the main panel
+			if (isConnected)
 			{
-				//Pseudo_ = pseudo;
-				panelMain_ = new PanelMain(width_);
+				Pseudo_ = pseudo;
+				panelMain_ = new PanelMain(width_, new SendListener());
 				setContentPane(panelMain_);
 				revalidate();
 				menuBar_.connect().setEnabled(false);
@@ -254,6 +305,40 @@ public class WindowMain extends JFrame
 			revalidate();
 			menuBar_.connect().setEnabled(true);
 			menuBar_.disconnect().setEnabled(false);
+		}
+	}
+	
+	class SendListener implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			// Get the chat panel
+			PanelChat panelChat = panelMain_.panelChat();
+			
+			// Reset the focus on the text area
+			panelChat.textArea().grabFocus();
+			
+			// Push the message on the panel
+			String txt = panelChat.textArea().getText();
+			panelChat.textArea().setText("");
+			Date date = new Date();
+			Timestamp ts = new Timestamp(date.getTime());
+			
+			String fakePseudo = Pseudo_;
+			if (++activeRoomIndex_ % 2 == 0)
+			{
+				fakePseudo = "Terry la louve";
+			}
+			
+			panelChat.pushMessage(txt, ts, fakePseudo);
+			
+			// Send the message to the server
+			Event event = Event.create_text_event(null, txt);
+			if (client_ != null)
+			{
+				client_.send_event(event);
+			}
 		}
 	}
 	
@@ -323,22 +408,22 @@ public class WindowMain extends JFrame
 // PRIVATE ATTRIBUTES
 	
 	// Event listener
-	private final Lock lock_ = new ReentrantLock();
-	private final Condition cond_ = lock_.newCondition();
+	private final   Lock lock_ = new ReentrantLock();
+	private final   Condition cond_ = lock_.newCondition();
 	private boolean listening_ = false;
 	
 	// Window
-	private int width_ = 1080;
-	private int height_ = 720;
-	private MenuBar menuBar_;
+	private int          width_ = 1080;
+	private int          height_ = 720;
+	private MenuBar      menuBar_;
 	private PanelConnect panelConnect_;
-	private PanelMain panelMain_;
+	private PanelMain    panelMain_;
 	
 	// Client
 	private Client client_;
 	
 	// State
 	private static List<Room> Rooms_ = new ArrayList<Room>();
-	private int activeRoomIndex_;
+	private int    activeRoomIndex_ = -1;
 	private static String Pseudo_ = "_default_";
 }

@@ -1,3 +1,5 @@
+package utilities.events;
+
 import java.util.UUID;
 
 // A user has been disconnected

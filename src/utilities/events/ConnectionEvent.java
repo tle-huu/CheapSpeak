@@ -1,3 +1,5 @@
+package utilities.events;
+
 import java.util.UUID;
 
 // A new user is connected

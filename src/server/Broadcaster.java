@@ -3,6 +3,7 @@ package server;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import utilities.Datagram;
+import utilities.events.Event;
 import utilities.infra.Log;
 
 import java.util.HashMap;

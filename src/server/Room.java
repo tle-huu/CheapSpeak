@@ -1,3 +1,5 @@
+package server;
+
 import java.util.Vector;
 
 /*
@@ -9,6 +11,7 @@ public class Room
 // PUBLIC
 
 // PRIVATE
+	
 	Vector<ClientConnection> clients_ = new Vector<ClientConnection>();
 
 }
