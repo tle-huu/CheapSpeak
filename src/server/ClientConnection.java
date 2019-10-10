@@ -76,7 +76,7 @@ public class ClientConnection implements Runnable, EventEngine
 
 		try
 		{
-			while (vocal_server_.running())
+			while (running_ && vocal_server_.running())
 			{
 				try
 				{
@@ -86,20 +86,22 @@ public class ClientConnection implements Runnable, EventEngine
 						break;
 					}
 
-					if (socket_.getInputStream().available() > 0)
-					{
-						Event event = (Event) input_stream_.readObject();
+					Event event = (Event) input_stream_.readObject();
 
-						// Setting emitter uuid
-						event.uuid(uuid_);
+					// Setting emitter uuid
+					event.uuid(uuid_);
 
-						// Process the event
-						handleEvent(event);
+					// Process the event
+					handleEvent(event);
 
-						// Pushing to broadcaster thread
-						broadcast(event);
+					// Pushing to broadcaster thread
+					broadcast(event);
 
-					}
+				}
+				catch (java.io.EOFException e)
+				{
+					Log.LOG(Log.Level.INFO, "CLientConnection [" + user_name_ + "] socket closed");
+					break;
 				}
 				catch (Exception e)
 				{
@@ -143,6 +145,7 @@ public class ClientConnection implements Runnable, EventEngine
 	public boolean handleDisconnection(DisconnectionEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "handleDisconnectionEvent: " + event.userName() + " disconnected");
+		close();
 		return true;
 	}
 

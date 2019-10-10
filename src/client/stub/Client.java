@@ -80,7 +80,7 @@ public class Client
 
     public void disconnect()
     {
-        running_.compareAndSet(true, false);
+        close();
     }
 
     public void start()
@@ -413,6 +413,25 @@ public class Client
         event.state(HandshakeEvent.State.LISTENING);
         send_event(event);
 
+        return true;
+    }
+
+    private boolean close()
+    {
+        try
+        {
+            output_stream_.close();
+            socket_.close();
+        }
+        catch (IOException e)
+        {
+            Log.LOG(Log.Level.ERROR, "Error closing socket: " + e);
+            return false;
+        }
+        finally
+        {
+            running_.compareAndSet(true, false);
+        }
         return true;
     }
 
