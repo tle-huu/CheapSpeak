@@ -45,26 +45,15 @@ public class WindowMain extends JFrame implements EventEngine
 // PUBLIC METHODS
 	
 	// Constructor
-	public WindowMain(List<Room> rooms)
+	public WindowMain()
 	{
 		super();
-		
-		// Set the rooms
-		Rooms_ = rooms;
 		
 		// Set the window
 		this.setTitle("Window Main");
 		this.setSize(width_, height_);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.addWindowListener(new WindowAdapter() {
-            //I skipped unused callbacks for readability
-
-            @Override
-            public void windowClosing(WindowEvent e)
-            {
-                
-            }
-        });
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.addWindowListener(new ExitAdapter());
 		this.setLocationRelativeTo(null);
 		
 		// Set the resize event
@@ -196,19 +185,35 @@ public class WindowMain extends JFrame implements EventEngine
 		this.setJMenuBar(menuBar_);
 	}
 	
-	private void exit()
+	private void disconnect()
 	{
+		Log.LOG(Log.Level.INFO, "Disconnected");
+		
 		// Send the disconnection message to the server
-		Event event = new DisconnectionEvent(null, Pseudo_);
 		if (client_ != null)
 		{
+			// Send the disconnection message to the server
+			Event event = new DisconnectionEvent(null, Pseudo_);
 			client_.send_event(event);
+			
+			// End the connection
+			client_.disconnect();
+			
+			// Reset the client
+			client_ = null;
 		}
 		
-		// End the connection
+		// Reset the rooms
+		Rooms_ = new ArrayList<Room>();
+		
+		// Stop listening
 		listening_ = false;
-		client_.disconnect();
-		client_ = null;
+	}
+	
+	private void exit()
+	{
+		// Disconnect from the server
+		disconnect();
 		
 		// End the app
 		System.exit(0);
@@ -302,6 +307,10 @@ public class WindowMain extends JFrame implements EventEngine
 				if (event != null)
 				{
 					boolean hasWorked = handleEvent(event);
+					if (!hasWorked)
+					{
+						Log.LOG(Log.Level.ERROR, "This event (type " + event.type() + ") didn't work: " + event.uuid());
+					}
 				}
 			}
 			listening_ = false;
@@ -324,6 +333,7 @@ public class WindowMain extends JFrame implements EventEngine
 				int padding = (int) ((float) width * 0.25f);
 	        	for (Component pan: messagePanel.getComponents())
 		        {
+	        		Log.LOG(Log.Level.INFO, "Pan resized: " + pan.getY());
 	        		Color panColor = pan.getBackground();
 	        		if (panColor.equals(Color.WHITE))
 	        		{
@@ -353,7 +363,7 @@ public class WindowMain extends JFrame implements EventEngine
 			// Check if the port is correct
 			if (port < 0 || port >= 65536)
 			{
-				// ...
+				Log.LOG(Log.Level.WARNING, "The port " + port + " is not supported");
 				return ;
 			}
 			
@@ -366,7 +376,7 @@ public class WindowMain extends JFrame implements EventEngine
 			}
 			catch (UnknownHostException e1)
 	        {
-	            Log.LOG(Log.Level.ERROR, "The host " + host + " is unknown");
+	            Log.LOG(Log.Level.WARNING, "The host " + host + " is unknown");
 	        }
 	        catch (IOException e1)
 	        {
@@ -401,17 +411,8 @@ public class WindowMain extends JFrame implements EventEngine
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// Send the disconnection message to the server
-			Event event = new DisconnectionEvent(null, Pseudo_);
-			if (client_ != null)
-			{
-				client_.send_event(event);
-			}
-			
-			// End the connection
-			listening_ = false;
-			client_.disconnect();
-			client_ = null;
+			// Disconnect from the server
+			disconnect();
 			
 			// Switch to the connection panel
 			panelMain_ = null;
@@ -433,11 +434,11 @@ public class WindowMain extends JFrame implements EventEngine
 			PanelChat panelChat = panelMain_.panelChat();
 			
 			// Reset the focus on the text area
-			panelChat.textArea().grabFocus();
+			panelChat.sendTextArea().grabFocus();
 			
 			// Get the text field and reset it
-			String txt = panelChat.textArea().getText();
-			panelChat.textArea().setText("");
+			String txt = panelChat.sendTextArea().getText();
+			panelChat.sendTextArea().setText("");
 			
 			// Push the message on the panel
 			panelChat.pushMessage(txt, Pseudo_);

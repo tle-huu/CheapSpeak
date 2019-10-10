@@ -51,16 +51,18 @@ public class PanelChat extends JPanel
 		jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		this.add(jsp, BorderLayout.CENTER);
 		
-		// Set the text field
+		// Set the send panel
 		JPanel south = new JPanel();
 		south.setLayout(new BorderLayout());
 		south.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-		jta_ = new JTextArea();
-		jta_.setMargin(new Insets(5, 5, 5, 5));
-		jta_.setFont(fontText_);
-		jta_.setLineWrap(true);
-		jta_.setWrapStyleWord(true);
-		JScrollPane jspText = new JScrollPane(jta_);
+		
+		// Set the send text area
+		sendTextArea_ = new JTextArea();
+		sendTextArea_.setMargin(new Insets(5, 5, 5, 5));
+		sendTextArea_.setFont(fontText_);
+		sendTextArea_.setLineWrap(true);
+		sendTextArea_.setWrapStyleWord(true);
+		JScrollPane jspText = new JScrollPane(sendTextArea_);
 		jspText.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		south.add(jspText, BorderLayout.CENTER);
 		
@@ -84,9 +86,9 @@ public class PanelChat extends JPanel
 		return messagePanel_;
 	}
 	
-	public JTextArea textArea()
+	public JTextArea sendTextArea()
 	{
-		return jta_;
+		return sendTextArea_;
 	}
 	
 	public void pushMessage(String txt, String pseudo)
@@ -160,7 +162,7 @@ public class PanelChat extends JPanel
 	
 // PRIVATE ATTRIBUTES
 	
-	private JTextArea jta_;
+	private JTextArea sendTextArea_;
 	private JButton   sendButton_;
 	private JPanel    messagePanel_;
 	

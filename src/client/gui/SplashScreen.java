@@ -52,15 +52,8 @@ public class SplashScreen extends JWindow
 		bar_.setForeground(Color.CYAN);
 		this.getContentPane().add(bar_, BorderLayout.SOUTH);
 		
-		// Set the room
-		Room r = new Room("Salon de the");
-		r.addClient("Michel");
-		r.addClient("Georges");
-		List<Room> lr = new ArrayList<Room>();
-		lr.add(r);
-		
 		// Create the main frame
-		wm_ = new WindowMain(lr);
+		wm_ = new WindowMain();
 	    
 		// Start the loading
 	    Thread t = new Thread(new Loading());

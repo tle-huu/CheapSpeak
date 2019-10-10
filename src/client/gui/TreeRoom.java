@@ -37,6 +37,7 @@ public class TreeRoom extends JTree
 		}
 		model_.setRoot(root_);
 		model_.reload();
+		expand();
 	}
 	
 	public void addRoom(Room room)
@@ -44,6 +45,7 @@ public class TreeRoom extends JTree
 		DefaultMutableTreeNode roomNode = new DefaultMutableTreeNode(room);
 		root_.add(roomNode);
 		model_.reload();
+		expand();
 	}
 	
 	public void removeRoom(String room)
@@ -100,6 +102,15 @@ public class TreeRoom extends JTree
 		}
 	}
 	
+// PRIVATE METHOD
+	
+	private void expand()
+	{
+		for (int i = 0; i < this.getRowCount(); ++i)
+		{
+		    this.expandRow(i);
+		}
+	}
 	
 // PRIVATE ATTRIBUTES
 	
