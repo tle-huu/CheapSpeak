@@ -45,10 +45,9 @@ public class VocalServer
 // PUBLIC
 	public VocalServer(int port) throws Exception
 	{
-
 		port_ = port;
 
-		Log.LOG(Log.Level.INFO, "Server listening to port " + Integer.toString(port));
+		Log.LOG(Log.Level.INFO, "Server listening to port " + port);
 		listening_socket_ = new ServerSocket(port_);
 
 	}
@@ -106,14 +105,24 @@ public class VocalServer
 	}
 
 // Exposed interface for server side objects (mainly used by the ConnetionClients)
-	public final boolean add_to_broadcast(Event event)
+	public boolean add_to_broadcast(Event event)
 	{
 		return broadcast_queue_.push(event);
 	}
 
-	public final Event pop_from_broadcast()
+	public Event pop_from_broadcast()
 	{
 		return broadcast_queue_.pop();
+	}
+
+	public void add_room(final ServerRoom room)
+	{
+		rooms_.put(room.name(), room);
+	}
+
+	public void remove_room(final String room_name)
+	{
+		rooms_.remove(room_name);
 	}
 
 	// TODO: Bad getter. Should disappear and be turned into a proper exposed API
@@ -122,11 +131,9 @@ public class VocalServer
 		return clients_;
 	}
 
-	public final boolean remove_client(ClientConnection client_conn)
+	public boolean remove_client(ClientConnection client_conn)
 	{
-		clients_mutex_.lock();
 		clients_.remove(client_conn.uuid());
-		clients_mutex_.unlock();
 		return true;
 	}
 
@@ -136,7 +143,7 @@ public class VocalServer
 		running_.getAndSet(false);
 	}
 
-	public final boolean running()
+	public boolean running()
 	{
 		return running_.get();
 	}
@@ -145,10 +152,8 @@ public class VocalServer
 
 	private boolean add_client(ClientConnection client_conn)
 	{
-		clients_mutex_.lock();
 		// TODO: Protect this with a better mutex system
 		clients_.put(client_conn.uuid(), client_conn);
-		clients_mutex_.unlock();
 		return true;
 	}
 
@@ -157,11 +162,12 @@ public class VocalServer
 
 	// Hash map to store client connections objects
 	private Hashtable<UUID, ClientConnection> clients_ = new Hashtable<UUID, ClientConnection>();
-	public final ReentrantLock 				clients_mutex_ = new ReentrantLock();
+
+	// Hash map to store client connections objects
+	private Hashtable<String, ServerRoom> rooms_ = new Hashtable<String, ServerRoom>();
 
 	// Shared ring buffer for broadcaster and client connections communication
 	private RingBuffer<Event> 			broadcast_queue_ = new RingBuffer<Event>();
-
 
 	/* 
 	 * Server infras

@@ -149,6 +149,33 @@ public class ClientConnection implements Runnable, EventEngine
 		return true;
 	}
 
+	public boolean handleEnterRoom(EnterRoomEvent event)
+    {
+        // currentRoom_ = event.roomName();
+        // vocal_server_.update_room(event.roomName(), event.userName());
+        return true;
+    }
+
+	public boolean handleLeaveRoom(LeaveRoomEvent event)
+    {
+        currentRoom_ = null;
+        // vocal_server_.update_room(event.roomName(), event.userName());
+        return true;
+    }
+
+	public boolean handleNewRoom(NewRoomEvent event)
+	{
+		vocal_server_.add_room(new ServerRoom(event.name(), vocal_server_));
+		return true;
+	}
+
+	public boolean handleRemoveRoom(RemoveRoomEvent event)
+	{
+		vocal_server_.remove_room(event.name());
+		return true;
+	}
+
+
 	public boolean handleVoice(VoiceEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "handleVoice");
@@ -273,7 +300,7 @@ public class ClientConnection implements Runnable, EventEngine
 			event.state(HandshakeEvent.State.OK);
 		}
 
-		// Setting user_name;
+		// Setting userName;
 		user_name_ = event.userName();
 		res = send(event);
 
@@ -308,8 +335,7 @@ public class ClientConnection implements Runnable, EventEngine
 	private String user_name_;
 
 	// Current room
-	// private String currentRoom_;
-
+	private ServerRoom currentRoom_;
 
 	// socket connection to the client
 	final private Socket socket_;

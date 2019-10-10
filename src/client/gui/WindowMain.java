@@ -28,6 +28,10 @@ import utilities.events.Event;
 import utilities.events.EventEngine;
 import utilities.events.TextEvent;
 import utilities.events.VoiceEvent;
+import utilities.events.EnterRoomEvent;
+import utilities.events.LeaveRoomEvent;
+import utilities.events.NewRoomEvent;
+import utilities.events.RemoveRoomEvent;
 import utilities.infra.Log;
 
 public class WindowMain extends JFrame implements EventEngine
@@ -141,6 +145,30 @@ public class WindowMain extends JFrame implements EventEngine
 		return true;
 	}
 	
+	@Override
+	public boolean handleEnterRoom(EnterRoomEvent event)
+    {
+        return true;
+    }
+
+	@Override
+	public boolean handleLeaveRoom(LeaveRoomEvent event)
+    {
+        return true;
+    }
+
+	@Override
+	public boolean handleNewRoom(NewRoomEvent event)
+	{
+		return true;
+	}
+
+	@Override
+	public boolean handleRemoveRoom(RemoveRoomEvent event)
+	{
+		return true;
+	}
+
 // PRIVATE METHODS
 	
 	private void initMenu()

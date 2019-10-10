@@ -47,8 +47,6 @@ public class Broadcaster extends Thread
                 }
 
                 // Removing dead clients (broken pipes)
-                // TODO: Need to put a mutex on this scope to avoid java.util.ConcurrentModificationException
-                vocal_server_.clients_mutex_.lock();
                 {
                     Vector<ClientConnection> dead_clients = new Vector<ClientConnection>();
                     for (ClientConnection client_conn : vocal_server_.clients().values())
@@ -74,7 +72,6 @@ public class Broadcaster extends Thread
                         client_conn.send(new_event);
                     }
                 }
-                vocal_server_.clients_mutex_.unlock();
             }
             catch (Exception e)
             {

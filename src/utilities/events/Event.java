@@ -30,6 +30,10 @@ public abstract class Event implements Serializable
 		VOICE,
 		TEXT,
 		HANDSHAKE,
+		NEW_ROOM,
+		REMOVE_ROOM,
+		ENTER_ROOM,
+		LEAVE_ROOM,
 		MAX_EVENT_TYPE;
 	}
 

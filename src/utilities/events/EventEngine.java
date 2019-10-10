@@ -3,6 +3,8 @@ package utilities.events;
 import utilities.events.ConnectionEvent;
 import utilities.events.DisconnectionEvent;
 import utilities.events.Event;
+import utilities.events.NewRoomEvent;
+import utilities.events.RemoveRoomEvent;
 import utilities.events.TextEvent;
 import utilities.events.VoiceEvent;
 
@@ -26,7 +28,19 @@ public interface EventEngine
 				
 			case TEXT:
 				return handleText((TextEvent) event);
-				
+
+			case NEW_ROOM:
+				return handleNewRoom((NewRoomEvent) event);
+
+			case REMOVE_ROOM:
+				return handleRemoveRoom((RemoveRoomEvent) event);
+
+			case ENTER_ROOM:
+				return handleEnterRoom( (EnterRoomEvent) event);
+
+			case LEAVE_ROOM:
+				return handleLeaveRoom( (LeaveRoomEvent) event);
+
 			default:
 				return false;
 		}
@@ -38,7 +52,16 @@ public interface EventEngine
 
 	public boolean handleDisconnection(DisconnectionEvent event);
 
-	public boolean handleVoice(VoiceEvent event);
+	public boolean handleEnterRoom(EnterRoomEvent event);
+
+	public boolean handleLeaveRoom(LeaveRoomEvent event);
+
+	public boolean handleNewRoom(NewRoomEvent event);
+
+	public boolean handleRemoveRoom(RemoveRoomEvent event);
 
 	public boolean handleText(TextEvent event);
+
+	public boolean handleVoice(VoiceEvent event);
+
 }

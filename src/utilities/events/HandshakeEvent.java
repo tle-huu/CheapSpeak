@@ -1,6 +1,9 @@
 package utilities.events;
 
-// Text message
+/*
+ * The HandShakeEvent is a shell servers and clients to initiate the communication
+ *
+ */
 public class HandshakeEvent extends Event
 {
 
