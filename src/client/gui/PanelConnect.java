@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -27,7 +26,7 @@ public class PanelConnect extends JPanel
 // PUBLIC METHODS
 
 	// Constructor
-	public PanelConnect(ActionListener connectListener)
+	public PanelConnect()
 	{
 		super();
 		
@@ -119,7 +118,6 @@ public class PanelConnect extends JPanel
 		connectButton_.setPreferredSize(new Dimension(200, 50));
 		connectButton_.setFont(fontLabel);
 		connectButton_.setBorder(BorderFactory.createRaisedBevelBorder());
-		connectButton_.addActionListener(connectListener);
 		buttonPanel.add(connectButton_, BorderLayout.SOUTH);
 		
 		++gbc.gridy;
@@ -150,6 +148,11 @@ public class PanelConnect extends JPanel
 			return -1;  
 		}
 		return port;
+	}
+	
+	public JButton connectButton()
+	{
+		return connectButton_;
 	}
 	
 // PRIVATE ATTRIBUTES

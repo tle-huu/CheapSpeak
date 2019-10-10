@@ -5,21 +5,27 @@ import java.util.UUID;
 public class RemoveRoomEvent extends Event
 {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8474946417409930932L;
+
 // PUBLIC METHODS
 
-	public RemoveRoomEvent(final UUID uuid, final String name)
+	// Constructor
+	public RemoveRoomEvent(final UUID uuid, final String roomName)
 	{
 		super(EventType.REMOVE_ROOM, uuid);
-		name_ = name;
+		roomName_ = roomName;
 	}
 
-	public String name()
+	public String roomName()
 	{
-		return name_;
+		return roomName_;
 	}
 
-// PRIVATE ATTRIBUTES
+// PRIVATE ATTRIBUTE
 
-	final private String name_;
+	final private String roomName_;
 
 }

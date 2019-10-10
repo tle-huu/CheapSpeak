@@ -11,7 +11,7 @@ public class ConnectionEvent extends Event
 	 */
 	private static final long serialVersionUID = 224199952016058665L;
 	
-// PUBLIC METHOD
+// PUBLIC METHODS
 	
 	// Constructor
 	public ConnectionEvent(UUID uuid, String room, String userName)

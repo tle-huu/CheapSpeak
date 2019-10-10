@@ -165,13 +165,13 @@ public class ClientConnection implements Runnable, EventEngine
 
 	public boolean handleNewRoom(NewRoomEvent event)
 	{
-		vocal_server_.add_room(new ServerRoom(event.name(), vocal_server_));
+		// vocal_server_.add_room(new ServerRoom(event.room(), vocal_server_));
 		return true;
 	}
 
 	public boolean handleRemoveRoom(RemoveRoomEvent event)
 	{
-		vocal_server_.remove_room(event.name());
+		// vocal_server_.remove_room(event.room());
 		return true;
 	}
 

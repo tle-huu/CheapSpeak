@@ -5,23 +5,27 @@ import java.util.UUID;
 public class NewRoomEvent extends Event
 {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -9024506760159173383L;
 
 // PUBLIC METHODS
 
-	public NewRoomEvent(final UUID uuid, final String name)
+	// Constructor
+	public NewRoomEvent(final UUID uuid, final String roomName)
 	{
 		super(EventType.NEW_ROOM, uuid);
-		name_ = name;
+		roomName_ = roomName;
 	}
 
-
-	public String name()
+	public String roomName()
 	{
-		return name_;
+		return roomName_;
 	}
 
-// PRIVATE ATTRIBUTES
+// PRIVATE ATTRIBUTE
 
-	final private String name_;
-
+	final private String roomName_;
+	
 }

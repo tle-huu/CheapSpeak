@@ -5,9 +5,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.AffineTransform;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,7 +29,7 @@ public class PanelChat extends JPanel
 // PUBLIC METHODS
 	
 	// Constructor
-	public PanelChat(ActionListener sendListener)
+	public PanelChat()
 	{
 		super();
 		
@@ -73,7 +70,6 @@ public class PanelChat extends JPanel
 		sendButton_ = new JButton("Send");
 		sendButton_.setPreferredSize(new Dimension(80, 45));
 		sendButton_.setFont(fontText_);
-		sendButton_.addActionListener(sendListener);
 		buttonPanel.add(sendButton_, BorderLayout.CENTER);
 		south.add(buttonPanel, BorderLayout.EAST);
 		
@@ -89,6 +85,11 @@ public class PanelChat extends JPanel
 	public JTextArea sendTextArea()
 	{
 		return sendTextArea_;
+	}
+	
+	public JButton sendButton()
+	{
+		return sendButton_;
 	}
 	
 	public void pushMessage(String txt, String pseudo)
@@ -144,13 +145,7 @@ public class PanelChat extends JPanel
 		panel.add(pseudoLabel, BorderLayout.NORTH);
 		panel.add(message, BorderLayout.CENTER);
 		panel.add(timestamp, BorderLayout.EAST);
-		/*
-		// Get the text width
-		AffineTransform affinetransform = new AffineTransform();     
-		FontRenderContext frc = new FontRenderContext(affinetransform,true,true);
-		int textWidth = (int)(fontText_.getStringBounds(txt, frc).getWidth());
-		int width = Math.max(117, Math.min(this.getWidth() - 120, textWidth));
-		*/
+
 		// Set the size
 		int height = (int) panel.getPreferredSize().getHeight();
 		panel.setMaximumSize(new Dimension(width, height));
