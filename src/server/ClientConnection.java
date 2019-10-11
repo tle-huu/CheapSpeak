@@ -64,7 +64,7 @@ public class ClientConnection implements Runnable, EventEngine
 
 		// notify others
 		{
-			ConnectionEvent my_connection_event = new ConnectionEvent(uuid_, "Salon de the", user_name_);
+			ConnectionEvent my_connection_event = new ConnectionEvent(uuid_, user_name_);
 			broadcast(my_connection_event);
 		}
 
@@ -323,7 +323,7 @@ public class ClientConnection implements Runnable, EventEngine
 	{
         for (ClientConnection client_conn : vocal_server_.clients().values())
         {
-			ConnectionEvent connection_event = new ConnectionEvent(uuid_, "Salon de the", client_conn.user_name_);
+			ConnectionEvent connection_event = new ConnectionEvent(uuid_, client_conn.user_name_);
             send(connection_event);
         }
         return true;

@@ -150,7 +150,7 @@ public class PanelChat extends JPanel
 		int height = (int) panel.getPreferredSize().getHeight();
 		panel.setMaximumSize(new Dimension(width, height));
 		
-		// Add the panel on the window
+		// Add the panel to the window
 		messagePanel_.add(panel);
 		messagePanel_.revalidate();
 	}

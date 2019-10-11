@@ -2,11 +2,18 @@ package utilities.events;
 
 import java.util.UUID;
 
+// TO BE REMOVED
 public class LeaveRoomEvent extends Event
 {
 
-// PUBLIC
-
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8340936016340909151L;
+	
+// PUBLIC METHODS
+	
+	// Constructor
     public LeaveRoomEvent(final UUID uuid, final String userName, final String roomName)
     {
         super(EventType.LEAVE_ROOM, uuid);
@@ -23,7 +30,7 @@ public class LeaveRoomEvent extends Event
     	return userName_;
     }
 
-// PRIVATE
+// PRIVATE ATTRIBUTES
 
     final String userName_;
     final String roomName_;

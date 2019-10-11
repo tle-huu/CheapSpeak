@@ -38,6 +38,7 @@ public interface EventEngine
 			case ENTER_ROOM:
 				return handleEnterRoom( (EnterRoomEvent) event);
 
+			// TO BE REMOVED
 			case LEAVE_ROOM:
 				return handleLeaveRoom( (LeaveRoomEvent) event);
 
@@ -54,6 +55,7 @@ public interface EventEngine
 
 	public boolean handleEnterRoom(EnterRoomEvent event);
 
+	// TO BE REMOVED
 	public boolean handleLeaveRoom(LeaveRoomEvent event);
 
 	public boolean handleNewRoom(NewRoomEvent event);

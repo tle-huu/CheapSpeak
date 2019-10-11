@@ -14,16 +14,10 @@ public class ConnectionEvent extends Event
 // PUBLIC METHODS
 	
 	// Constructor
-	public ConnectionEvent(UUID uuid, String room, String userName)
+	public ConnectionEvent(UUID uuid, String userName)
 	{
 		super(EventType.CONNECTION, uuid);
-		room_ = room;
 		userName_ = userName;
-	}
-	
-	public String room()
-	{
-		return room_;
 	}
 	
 	public String userName()
@@ -31,8 +25,7 @@ public class ConnectionEvent extends Event
 		return userName_;
 	}
 	
-// PRIVATE ATTRIBUTES
+// PRIVATE ATTRIBUTE
 	
-	private String room_;
 	private String userName_;
 }

@@ -35,8 +35,6 @@ import utilities.events.TextEvent;
 import utilities.events.VoiceEvent;
 import utilities.events.EnterRoomEvent;
 import utilities.events.LeaveRoomEvent;
-import utilities.events.NewRoomEvent;
-import utilities.events.RemoveRoomEvent;
 import utilities.infra.Log;
 
 public class WindowMain extends JFrame implements EventEngine
@@ -54,15 +52,15 @@ public class WindowMain extends JFrame implements EventEngine
 	{
 		super();
 		
-		// Test room
-		Room room = new Room("Test room");
-		room.addClient("Alice");
-		room.addClient("Bob");
-		Rooms_.add(room);
-		Room room2 = new Room("Test room 2");
-		room2.addClient("Alice 2");
-		room2.addClient("Bob 2");
-		Rooms_.add(room2);
+		// Set default room
+		defaultRoom_ = new Room("Lobby");
+		//defaultRoom_.addClient("Alice");
+		//defaultRoom_.addClient("Bob");
+		Rooms_.add(defaultRoom_);
+		//Room room = new Room("Test room");
+		//room.addClient("Alice 2");
+		//room.addClient("Bob 2");
+		//Rooms_.add(room);
 		
 		// Set the window
 		this.setTitle("Window Main");
@@ -104,12 +102,11 @@ public class WindowMain extends JFrame implements EventEngine
 	{
 		Log.LOG(Log.Level.INFO, "Connection event received");
 		
-		// Get the room and the username
-		String room = event.room();
+		// Get the username
 		String pseudo = event.userName();
 		
 		// Add the new client
-		addClient(room, pseudo);
+		addClient(defaultRoom_.name(), pseudo);
 		
 		return true;
 	}
@@ -156,8 +153,15 @@ public class WindowMain extends JFrame implements EventEngine
 		// Check if the user was in this room
 		if (currentRoom_.equals(roomName))
 		{
-			currentRoom_ = null;
-			panelMain_.closeChat();
+			currentRoom_ = defaultRoom_.name();
+			panelMain_.resetChat();
+		}
+		
+		// Send enter room event to the server
+		if (client_ != null)
+		{
+			Event enterRoomEvent = new EnterRoomEvent(null, currentRoom_, Pseudo_);
+			client_.send_event(enterRoomEvent);
 		}
 		
 		return true;
@@ -189,13 +193,28 @@ public class WindowMain extends JFrame implements EventEngine
 	@Override
 	public boolean handleEnterRoom(EnterRoomEvent event)
     {
-        return true;
+		Log.LOG(Log.Level.INFO, "Enter room event received");
+		
+		// Get the room and the username
+		String roomName = event.roomName();
+		String pseudo = event.userName();
+		
+		// Remove the client from the previous room
+		removeClient(pseudo);
+		
+		// Add the client in the new room
+		addClient(roomName, pseudo);
+		
+		return true;
     }
 
+	// TO BE REMOVED
 	@Override
 	public boolean handleLeaveRoom(LeaveRoomEvent event)
     {
-        return true;
+		Log.LOG(Log.Level.INFO, "Leave room event received");
+		
+		return true;
     }
 
 // PRIVATE METHODS
@@ -422,18 +441,20 @@ public class WindowMain extends JFrame implements EventEngine
 	        	e1.printStackTrace();
 	        }
 			
-			// Switch to the main panel
+			// Set the main panel
 			if (isConnected)
 			{
 				// Set the pseudo
 				Pseudo_ = pseudo;
+				
+				// Set the current room to default room
+				currentRoom_ = defaultRoom_.name();
 				
 				// Switch to the main panel
 				panelMain_ = new PanelMain();
 				panelMain_.setDividerLocation(width_ * 20 / 100);
 				panelMain_.tree().addMouseListener(new RoomAdapter());
 				panelMain_.panelChat().sendButton().addActionListener(new SendListener());
-				panelMain_.closeChat();
 				setContentPane(panelMain_);
 				revalidate();
 				
@@ -500,7 +521,7 @@ public class WindowMain extends JFrame implements EventEngine
 		@Override
 		public void mousePressed(MouseEvent e)
 	    {
-			if (e.getClickCount() == 4)
+			if (e.getClickCount() == 1)
 			{
 				// Get the tree
 				TreeRoom tree = panelMain_.tree();
@@ -516,30 +537,17 @@ public class WindowMain extends JFrame implements EventEngine
 		        		String roomName = path.getLastPathComponent().toString();
 		        		
 		        		// Check if the user was already in this room
-		        		if (currentRoom_ != null && currentRoom_.equals(roomName))
-		        		{
-		        			// Leave the room
-		        			currentRoom_ = null;
-		        			panelMain_.closeChat();
-		        			
-		        			// Send the leave room event to the server
-				        	if (client_ != null)
-							{
-								//Event event = new closeChatEvent(null, roomName, Pseudo_);
-								//client_.send_event(event);
-							}
-		        		}
-		        		else
+		        		if (currentRoom_ == null || !currentRoom_.equals(roomName))
 		        		{
 		        			// Enter the room
 			        		currentRoom_ = roomName;
-			        		panelMain_.openChat();
+			        		panelMain_.resetChat();
 			        		
 			        		// Send the enter room event to the server
 				        	if (client_ != null)
 							{
-								Event event = new ConnectionEvent(null, roomName, Pseudo_);
-								client_.send_event(event);
+								//Event event = new EnterRoomEvent(null, roomName, Pseudo_);
+								//client_.send_event(event);
 							}
 		        		}
 		        	}
@@ -638,7 +646,8 @@ public class WindowMain extends JFrame implements EventEngine
 	
 	// State
 	private static List<Room> Rooms_ = new ArrayList<Room>();
+	private Room              defaultRoom_;
 	private String            currentRoom_ = null;
-	private static String     Pseudo_ = "_default";
+	private static String     Pseudo_ = "default_";
 	private boolean           noConnectionMode_ = true;
 }
