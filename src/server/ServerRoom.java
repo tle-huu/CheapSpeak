@@ -1,6 +1,6 @@
 package server;
 
-import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 /*
@@ -48,7 +48,7 @@ public class ServerRoom
 
 // PRIVATE ATTRIBUTES
 
-	private Set<UUID> client_uuids_set_;
+	private TreeSet<UUID> client_uuids_set_ = new TreeSet<UUID>();
 
 	final private String name_;
 

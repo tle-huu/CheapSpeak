@@ -15,6 +15,8 @@ public interface EventEngine
 
 	default boolean handleEvent(Event event)
 	{
+		assert event != null : "HandleEvent received a null event";
+
 		switch (event.type())
 		{
 			case CONNECTION:
