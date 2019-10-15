@@ -67,10 +67,10 @@ public class Broadcaster extends Thread
                 for (ClientConnection client_conn : vocal_server_.clients().values())
                 {
                     // TODO: Should push into a ClientConnecton buffer instead of sending them directly
-                    if (client_conn.uuid() != new_event.uuid())
-                    {
+                    // if (client_conn.uuid() != new_event.uuid())
+                    // {
                         client_conn.send(new_event);
-                    }
+                    // }
                 }
             }
             catch (Exception e)

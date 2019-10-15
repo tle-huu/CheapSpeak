@@ -50,11 +50,9 @@ public class VocalServer
 		Log.LOG(Log.Level.INFO, "Server listening to port " + port);
 		listening_socket_ = new ServerSocket(port_);
 
-		// TODO remove this
-        // ServerRoom test = new ServerRoom("La room de l ambiance", this);
-        // ServerRoom lobby = new ServerRoom("Lobby", this);
-        // rooms_.put(test.name(), test);
-        // rooms_.put(lobby.name(), lobby);
+		// TODO Move into an init function
+        ServerRoom lobby = new ServerRoom("Lobby", this);
+        rooms_.put(lobby.name(), lobby);
 
 	}
 
@@ -176,6 +174,8 @@ public class VocalServer
 
 	public boolean remove_client(ClientConnection client_conn)
 	{
+		ServerRoom client_room = rooms_.get(client_conn.currentRoom());
+		client_room.remove_client(client_conn.uuid());
 		clients_.remove(client_conn.uuid());
 		return true;
 	}
