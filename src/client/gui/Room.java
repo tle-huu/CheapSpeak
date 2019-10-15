@@ -34,6 +34,11 @@ public class Room
 		return clients_.remove(client);
 	}
 	
+	public void clear()
+	{
+		clients_.clear();
+	}
+	
 	@Override
 	public String toString()
 	{

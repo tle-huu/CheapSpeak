@@ -61,6 +61,7 @@ public class TreeRoom extends JTree
 				break;
 			}
 		}
+		expand();
 	}
 	
 	public void addClient(String room, String client)
@@ -76,6 +77,7 @@ public class TreeRoom extends JTree
 				break;
 			}
 		}
+		expand();
 	}
 	
 	public void removeClient(String room, String client)
@@ -100,6 +102,7 @@ public class TreeRoom extends JTree
 				break;
 			}
 		}
+		expand();
 	}
 	
 // PRIVATE METHOD

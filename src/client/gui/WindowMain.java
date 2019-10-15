@@ -36,7 +36,6 @@ import utilities.events.RemoveRoomEvent;
 import utilities.events.TextEvent;
 import utilities.events.VoiceEvent;
 import utilities.events.EnterRoomEvent;
-import utilities.events.LeaveRoomEvent;
 import utilities.infra.Log;
 
 public class WindowMain extends JFrame implements EventEngine
@@ -56,13 +55,7 @@ public class WindowMain extends JFrame implements EventEngine
 		
 		// Set default room
 		defaultRoom_ = new Room("Lobby");
-		//defaultRoom_.addClient("Alice");
-		//defaultRoom_.addClient("Bob");
 		Rooms_.add(defaultRoom_);
-		//Room room = new Room("Test room");
-		//room.addClient("Alice 2");
-		//room.addClient("Bob 2");
-		//Rooms_.add(room);
 		
 		// Set the window
 		this.setTitle("Window Main");
@@ -185,8 +178,11 @@ public class WindowMain extends JFrame implements EventEngine
 		String pseudo = event.userName();
 		String txt = event.textPacket();
 		
-		// Push the message on the panel
-		panelMain_.panelChat().pushMessage(txt, pseudo);
+		// Push the message on the panel if it's not the user's message
+		if (!Pseudo_.equals(pseudo))
+		{
+			panelMain_.panelChat().pushMessage(txt, pseudo);
+		}
 		
 		return true;
 	}
@@ -212,15 +208,6 @@ public class WindowMain extends JFrame implements EventEngine
 			currentRoom_ = roomName;
 			panelMain_.resetChat();
 		}
-		
-		return true;
-    }
-
-	// TO BE REMOVED
-	@Override
-	public boolean handleLeaveRoom(LeaveRoomEvent event)
-    {
-		Log.LOG(Log.Level.INFO, "Leave room event received");
 		
 		return true;
     }
@@ -293,6 +280,7 @@ public class WindowMain extends JFrame implements EventEngine
 		
 		// Reset the rooms
 		Rooms_ = new ArrayList<Room>();
+		defaultRoom_.clear();
 		Rooms_.add(defaultRoom_);
 		
 		// Stop listening
@@ -700,7 +688,20 @@ public class WindowMain extends JFrame implements EventEngine
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// ...
+			// Set the shortcuts list
+			String shortcuts = "Connect:        ctrl+e\n"
+							 + "Disconnect:     ctrl+d\n"
+							 + "Exit:           ctrl+w\n"
+							 + "Change pseudo:  ctrl+p\n"
+							 + "Change theme:   ctrl+t\n"
+							 + "Fullscreen:     ctrl+f\n"
+							 + "Contribute:     ctrl+b";
+			
+			// Display an information message
+			JOptionPane.showMessageDialog(null, 
+										  shortcuts, 
+										  "Shortcuts", 
+										  JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 	
@@ -709,7 +710,11 @@ public class WindowMain extends JFrame implements EventEngine
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// ...
+			// Display an information message
+			JOptionPane.showMessageDialog(null, 
+										  "Do not hesitate to give a tip :)", 
+										  "Be generous !", 
+										  JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 

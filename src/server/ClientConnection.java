@@ -159,14 +159,6 @@ public class ClientConnection implements Runnable, EventEngine
     }
 
 	@Override
-	public boolean handleLeaveRoom(LeaveRoomEvent event)
-    {
-        currentRoom_ = null;
-        // vocal_server_.update_room(event.roomName(), event.userName());
-        return true;
-    }
-
-	@Override
 	public boolean handleNewRoom(NewRoomEvent event)
 	{
 		// vocal_server_.add_room(new ServerRoom(event.room(), vocal_server_));
