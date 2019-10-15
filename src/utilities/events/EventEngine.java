@@ -36,12 +36,15 @@ public interface EventEngine
 				return handleRemoveRoom((RemoveRoomEvent) event);
 
 			case ENTER_ROOM:
-				return handleEnterRoom( (EnterRoomEvent) event);
+				return handleEnterRoom((EnterRoomEvent) event);
 
 			// TO BE REMOVED
 			case LEAVE_ROOM:
-				return handleLeaveRoom( (LeaveRoomEvent) event);
+				return handleLeaveRoom((LeaveRoomEvent) event);
 
+			case CHANGE_PSEUDO:
+				return handleChangePseudo((ChangePseudoEvent) event);
+				
 			default:
 				return false;
 		}
@@ -65,5 +68,7 @@ public interface EventEngine
 	public boolean handleText(TextEvent event);
 
 	public boolean handleVoice(VoiceEvent event);
+	
+	public boolean handleChangePseudo(ChangePseudoEvent event);
 
 }

@@ -34,20 +34,11 @@ public class PanelMain extends JSplitPane
 		return panelChat_;
 	}
 	
-	/*public void closeChat()
-	{
-		panelChat_.setVisible(false);
-		panelChat_.messagePanel().removeAll();
-		panelChat_.sendTextArea().setText("");
-		panelChat_.repaint();
-	}*/
-	
 	public void resetChat()
 	{
 		panelChat_.messagePanel().removeAll();
 		panelChat_.sendTextArea().setText("");
 		panelChat_.repaint();
-		//panelChat_.setVisible(true);
 	}
 	
 // PRIVATE ATTRIBUTES

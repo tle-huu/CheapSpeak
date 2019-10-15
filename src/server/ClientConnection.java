@@ -135,13 +135,14 @@ public class ClientConnection implements Runnable, EventEngine
 		}
 	}
 
-
+	@Override
 	public boolean handleConnection(ConnectionEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "handleConnection");
 		return true;
 	}
 
+	@Override
 	public boolean handleDisconnection(DisconnectionEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "handleDisconnectionEvent: " + event.userName() + " disconnected");
@@ -149,6 +150,7 @@ public class ClientConnection implements Runnable, EventEngine
 		return true;
 	}
 
+	@Override
 	public boolean handleEnterRoom(EnterRoomEvent event)
     {
         // currentRoom_ = event.roomName();
@@ -156,6 +158,7 @@ public class ClientConnection implements Runnable, EventEngine
         return true;
     }
 
+	@Override
 	public boolean handleLeaveRoom(LeaveRoomEvent event)
     {
         currentRoom_ = null;
@@ -163,32 +166,42 @@ public class ClientConnection implements Runnable, EventEngine
         return true;
     }
 
+	@Override
 	public boolean handleNewRoom(NewRoomEvent event)
 	{
 		// vocal_server_.add_room(new ServerRoom(event.room(), vocal_server_));
 		return true;
 	}
 
+	@Override
 	public boolean handleRemoveRoom(RemoveRoomEvent event)
 	{
 		// vocal_server_.remove_room(event.room());
 		return true;
 	}
 
-
+	@Override
 	public boolean handleVoice(VoiceEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "handleVoice");
 		return true;
 	}
 
+	@Override
 	public boolean handleText(TextEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "handleText from " + event.userName() + ": " + event.textPacket());
 		return true;
 	}
+	
+	@Override
+	public boolean handleChangePseudo(ChangePseudoEvent event)
+	{
+		Log.LOG(Log.Level.INFO, "handleChangePseudo from " + event.oldPseudo() + " to " + event.newPseudo());
+		return true;
+	}
 
-
+	
 	public int port()
 	{
 		return socket_.getPort();

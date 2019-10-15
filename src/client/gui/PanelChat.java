@@ -36,14 +36,10 @@ public class PanelChat extends JPanel
 		// Set the main panel
 		this.setLayout(new BorderLayout());
 		
-		// Set the fonts
-		fontText_ = new Font("Arial", Font.PLAIN, 14);
-		fontPseudo_ = new Font("Arial", Font.BOLD, 14);
-		
 		// Set the message panel
 		messagePanel_ = new JPanel();
 		messagePanel_.setLayout(new BoxLayout(messagePanel_, BoxLayout.Y_AXIS));
-		messagePanel_.setBackground(Color.YELLOW);
+		messagePanel_.setBackground(backgroundColor_);
 		JScrollPane jsp = new JScrollPane(messagePanel_);
 		jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		this.add(jsp, BorderLayout.CENTER);
@@ -92,6 +88,16 @@ public class PanelChat extends JPanel
 		return sendButton_;
 	}
 	
+	public Color backgroundColor()
+	{
+		return backgroundColor_;
+	}
+	
+	public Color otherMessageColor()
+	{
+		return otherMessageColor_;
+	}
+	
 	public void pushMessage(String txt, String pseudo)
 	{
 		// Break if the message is empty
@@ -134,13 +140,13 @@ public class PanelChat extends JPanel
 		int padding = (int) ((float) width * 0.25f);
 		if (!pseudo.equals(WindowMain.Pseudo()))
 		{
-			panel.setBackground(Color.WHITE);
-			panel.setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, Color.YELLOW));
+			panel.setBackground(otherMessageColor_);
+			panel.setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, backgroundColor_));
 		}
 		else
 		{
-			panel.setBackground(Color.GREEN);
-			panel.setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, Color.YELLOW));
+			panel.setBackground(userMessageColor_);
+			panel.setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, backgroundColor_));
 		}
 		panel.add(pseudoLabel, BorderLayout.NORTH);
 		panel.add(message, BorderLayout.CENTER);
@@ -161,8 +167,12 @@ public class PanelChat extends JPanel
 	private JButton   sendButton_;
 	private JPanel    messagePanel_;
 	
-	private Font fontText_,
-				 fontPseudo_;
+	private Font fontText_ = new Font("Arial", Font.PLAIN, 14),
+				 fontPseudo_ = new Font("Arial", Font.BOLD, 14);
+	
+	private Color backgroundColor_ = new Color(0xfffcba),
+				  userMessageColor_ = new Color(0x78f054),
+				  otherMessageColor_ = new Color(0xf5ffe8);
 	
 	private final SimpleDateFormat SDF = new SimpleDateFormat("HH:mm");
 }

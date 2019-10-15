@@ -21,10 +21,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.tree.TreePath;
 
 import client.stub.Client;
+import utilities.events.ChangePseudoEvent;
 import utilities.events.ConnectionEvent;
 import utilities.events.DisconnectionEvent;
 import utilities.events.Event;
@@ -108,6 +110,12 @@ public class WindowMain extends JFrame implements EventEngine
 		// Add the new client
 		addClient(defaultRoom_.name(), pseudo);
 		
+		// Set the current room to default room if this is the user
+		if (Pseudo_.equals(pseudo))
+		{
+			currentRoom_ = defaultRoom_.name();
+		}
+		
 		return true;
 	}
 
@@ -150,18 +158,11 @@ public class WindowMain extends JFrame implements EventEngine
 		// Remove the room
 		removeRoom(roomName);
 		
-		// Check if the user was in this room
+		// Reset the main panel if the user is inside
 		if (currentRoom_.equals(roomName))
 		{
-			currentRoom_ = defaultRoom_.name();
+			currentRoom_ = null;
 			panelMain_.resetChat();
-		}
-		
-		// Send enter room event to the server
-		if (client_ != null)
-		{
-			Event enterRoomEvent = new EnterRoomEvent(null, currentRoom_, Pseudo_);
-			client_.send_event(enterRoomEvent);
 		}
 		
 		return true;
@@ -205,6 +206,13 @@ public class WindowMain extends JFrame implements EventEngine
 		// Add the client in the new room
 		addClient(roomName, pseudo);
 		
+		// Update the room if needed
+		if (Pseudo_.equals(pseudo))
+		{
+			currentRoom_ = roomName;
+			panelMain_.resetChat();
+		}
+		
 		return true;
     }
 
@@ -213,6 +221,27 @@ public class WindowMain extends JFrame implements EventEngine
 	public boolean handleLeaveRoom(LeaveRoomEvent event)
     {
 		Log.LOG(Log.Level.INFO, "Leave room event received");
+		
+		return true;
+    }
+	
+	@Override
+	public boolean handleChangePseudo(ChangePseudoEvent event)
+    {
+		Log.LOG(Log.Level.INFO, "Change pseudo event received");
+		
+		// Get the old and new pseudo
+		String oldPseudo = event.oldPseudo();
+		String newPseudo = event.newPseudo();
+		
+		// Change the current pseudo if needed
+		if (Pseudo_.equals(oldPseudo))
+		{
+			Pseudo_ = newPseudo;
+		}
+		
+		// Change the username in the tree
+		changeClient(oldPseudo, newPseudo);
 		
 		return true;
     }
@@ -264,6 +293,7 @@ public class WindowMain extends JFrame implements EventEngine
 		
 		// Reset the rooms
 		Rooms_ = new ArrayList<Room>();
+		Rooms_.add(defaultRoom_);
 		
 		// Stop listening
 		listening_ = false;
@@ -272,9 +302,13 @@ public class WindowMain extends JFrame implements EventEngine
 	private void exit()
 	{
 		// Disconnect from the server
-		disconnect();
+		if (panelMain_ != null)
+		{
+			disconnect();
+		}
 		
 		// End the app
+		Log.LOG(Log.Level.INFO, "Exit");
 		System.exit(0);
 	}
 	
@@ -341,6 +375,28 @@ public class WindowMain extends JFrame implements EventEngine
 		}
 	}
 	
+	private void changeClient(String oldClient, String newClient)
+	{
+		// Update the room
+		String room = null;
+		for (Room r: Rooms_)
+		{
+			boolean isRemoved = r.removeClient(oldClient);
+			if (isRemoved)
+			{
+				room = r.name();
+				break;
+			}
+		}
+		
+		// Update the tree
+		if (room != null)
+		{
+			panelMain_.tree().removeClient(room, oldClient);
+			panelMain_.tree().addClient(room, newClient);
+		}
+	}
+	
 	private void eventListener()
 	{
 		while (true)
@@ -387,19 +443,22 @@ public class WindowMain extends JFrame implements EventEngine
 	        // Set the size of the message boxes
 			if (panelMain_ != null)
 	        {
-	        	JPanel messagePanel = panelMain_.panelChat().messagePanel();
-	        	int width = panelMain_.panelChat().getWidth();
+	        	PanelChat panelChat = panelMain_.panelChat();
+				JPanel messagePanel = panelChat.messagePanel();
+	        	int width = panelChat.getWidth();
 				int padding = (int) ((float) width * 0.25f);
+				Color backgroundColor = panelChat.backgroundColor();
+				Color otherMessageColor = panelChat.otherMessageColor();
 	        	for (Component pan: messagePanel.getComponents())
 		        {
 	        		Color panColor = pan.getBackground();
-	        		if (panColor.equals(Color.WHITE))
+	        		if (panColor.equals(otherMessageColor))
 	        		{
-	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, Color.YELLOW));
+	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, backgroundColor));
 	        		}
 	        		else
 	        		{
-	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, Color.YELLOW));
+	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, backgroundColor));
 	        		}
 	        		int height = (int) pan.getPreferredSize().getHeight();
 		    		pan.setMaximumSize(new Dimension(width, height));
@@ -446,9 +505,6 @@ public class WindowMain extends JFrame implements EventEngine
 			{
 				// Set the pseudo
 				Pseudo_ = pseudo;
-				
-				// Set the current room to default room
-				currentRoom_ = defaultRoom_.name();
 				
 				// Switch to the main panel
 				panelMain_ = new PanelMain();
@@ -504,6 +560,12 @@ public class WindowMain extends JFrame implements EventEngine
 			String txt = panelChat.sendTextArea().getText();
 			panelChat.sendTextArea().setText("");
 			
+			// Break if the user is not a room
+			if (currentRoom_ == null)
+			{
+				return ;
+			}
+			
 			// Push the message on the panel
 			panelChat.pushMessage(txt, Pseudo_);
 			
@@ -538,16 +600,16 @@ public class WindowMain extends JFrame implements EventEngine
 		        		
 		        		// Check if the user was already in this room
 		        		if (currentRoom_ == null || !currentRoom_.equals(roomName))
-		        		{
-		        			// Enter the room
-			        		currentRoom_ = roomName;
-			        		panelMain_.resetChat();
-			        		
-			        		// Send the enter room event to the server
-				        	if (client_ != null)
+		        		{	
+		        			// Reset the main panel
+		        			currentRoom_ = null;
+		        			panelMain_.resetChat();
+		        			
+		        			// Send the enter room event to the server
+		        			if (client_ != null)
 							{
-								//Event event = new EnterRoomEvent(null, roomName, Pseudo_);
-								//client_.send_event(event);
+								Event event = new EnterRoomEvent(null, Pseudo_, roomName);
+								client_.send_event(event);
 							}
 		        		}
 		        	}
@@ -579,7 +641,31 @@ public class WindowMain extends JFrame implements EventEngine
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// ...
+			// Break if not in the main panel
+			if (panelMain_ == null)
+			{
+				// Inform the client he cannot change his pseudo on this page
+				JOptionPane.showMessageDialog(null, 
+											  "You cannot change your pseudo on this page !", 
+											  "Information", 
+											  JOptionPane.INFORMATION_MESSAGE);
+				
+				// Break
+				return ;
+			}
+			
+			// Create an input window to get the new pseudo
+			String newPseudo = JOptionPane.showInputDialog(null, 
+														   "Enter a new pseudo", 
+														   "Change your pseudo", 
+														   JOptionPane.QUESTION_MESSAGE);
+			
+			// Send the change pseudo event to the server
+        	if (client_ != null)
+			{
+				Event event = new ChangePseudoEvent(null, Pseudo_, newPseudo);
+				client_.send_event(event);
+			}
 		}
 	}
 	

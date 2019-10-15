@@ -20,7 +20,7 @@ public class TreeRoom extends JTree
 	public TreeRoom()
 	{
 		super();
-		model_ = (DefaultTreeModel)this.getModel();
+		model_ = (DefaultTreeModel) this.getModel();
 		root_ = new DefaultMutableTreeNode("Rooms");
 		this.setRootVisible(false);
 		for (int i = 0; i < WindowMain.rooms().size(); ++i)
