@@ -104,7 +104,7 @@ public class Client
             Log.LOG(Log.Level.ERROR, "Sending an event of type " + event.type().name() + " failed");
         }
     }
-
+/*
     public void start_recording_thread() throws Exception
     {
         try
@@ -129,7 +129,6 @@ public class Client
                         Log.LOG(Log.Level.INFO, "Microphone starting");
                         while (running_.get())
                         {
-
                             // Reading audio data from the microphone and writing it to data[]
                             byte[] data = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
                             numBytesRead = microphone_.read(data, 0, data.length);
@@ -240,7 +239,7 @@ public class Client
             Log.LOG(Log.Level.ERROR, e.getMessage());
         }
     }
-
+*/
 // PRIVATE
 
     private void start_listening()
