@@ -54,6 +54,12 @@ public class VocalServer
         ServerRoom lobby = new ServerRoom("Lobby", this);
         rooms_.put(lobby.name(), lobby);
 
+        add_room(new ServerRoom("La chambre d'Elie", this));
+        add_room(new ServerRoom("La chambre d'Oket", this));
+        add_room(new ServerRoom("La chambre de Crepel", this));
+        add_room(new ServerRoom("Le harem de Victor Robin", this));
+        add_room(new ServerRoom("Le Cabinet", this));
+
 	}
 
 	// Starts the broadcasting thread and the main listening loop
@@ -131,17 +137,19 @@ public class VocalServer
 
 	public boolean update_room(final UUID clientUUID, final String oldRoomName, final String newRoomName)
 	{
-        // Removing client from the current room he was in
-		ServerRoom oldRoom = rooms_.get(oldRoomName);
-
-		if (oldRoom == null)
+		if (oldRoomName != null)
 		{
-			Log.LOG(Log.Level.ERROR, "Updating room error: old room [" + oldRoomName + "] does not exist");
-			return false;
+	        // Removing client from the current room he was in
+			ServerRoom oldRoom = rooms_.get(oldRoomName);
+
+			if (oldRoom == null)
+			{
+				Log.LOG(Log.Level.ERROR, "Updating room error: old room [" + oldRoomName + "] does not exist");
+				return false;
+			}
+
+			oldRoom.remove_client(clientUUID);
 		}
-
-		oldRoom.remove_client(clientUUID);
-
 
         // Adding the client to his new room
         ServerRoom newRoom = rooms_.get(newRoomName);
@@ -155,7 +163,7 @@ public class VocalServer
 		return true;
 	}
 
-    public Vector<ServerRoom> rooms()
+    public Vector<ServerRoom> rooms_vector()
     {
         Vector<ServerRoom> rooms = new Vector<ServerRoom>(rooms_.size());
         for (ServerRoom room : rooms_.values())
@@ -164,6 +172,11 @@ public class VocalServer
         }
        
        return rooms;
+    }
+
+    public Hashtable<String, ServerRoom> rooms()
+    {
+		return rooms_;
     }
 
 	// TODO: Bad getter. Should disappear and be turned into a proper exposed API

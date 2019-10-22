@@ -1,7 +1,10 @@
 package server;
 
+import utilities.events.TextEvent;
+
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.Vector;
 
 /*
  * Simple ServerRoom class storing clients uuid
@@ -40,6 +43,32 @@ public class ServerRoom
 		return uuid_;
 	}
 
+	public Vector<ClientConnection> clients()
+	{
+		Vector<ClientConnection> clients = new Vector<ClientConnection>();
+
+		for (UUID uuid : client_uuids_set_)
+		{
+			clients.add(vocal_server_.clients().get(uuid));
+		}
+		return clients;
+	}
+
+	public void add_to_history(final TextEvent text_event)
+	{
+		history_.add(text_event);
+	}
+
+	public void clear_history()
+	{
+		history_.clear();
+	}
+
+	public Vector<TextEvent> history()
+	{
+		return history_;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -55,5 +84,7 @@ public class ServerRoom
 	final private VocalServer vocal_server_;
 
 	final private UUID uuid_ = UUID.randomUUID();
+
+	private Vector<TextEvent> history_ = new Vector<TextEvent>();
 
 }

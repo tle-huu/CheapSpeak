@@ -96,7 +96,7 @@ public class ClientConnection implements Runnable, EventEngine
                     handleEvent(event);
 
                     // Pushing to broadcaster thread
-                    broadcast(event);
+                    // broadcast(event);
 
                 }
                 catch (java.io.EOFException e)
@@ -140,6 +140,8 @@ public class ClientConnection implements Runnable, EventEngine
     public boolean handleConnection(ConnectionEvent event)
     {
         Log.LOG(Log.Level.INFO, "handleConnection");
+        broadcast(event);
+
         return true;
     }
 
@@ -148,6 +150,8 @@ public class ClientConnection implements Runnable, EventEngine
     {
         Log.LOG(Log.Level.INFO, "handleDisconnectionEvent: " + event.userName() + " disconnected");
         close();
+        broadcast(event);
+
         return true;
     }
 
@@ -162,6 +166,17 @@ public class ClientConnection implements Runnable, EventEngine
             return false;
         }
         currentRoom_ = event.roomName();
+
+        broadcast(event);
+
+        // ServerRoom room = vocal_server_.rooms().get(currentRoom_);
+
+        // for (TextEvent text_event : room.history())
+        // {
+        //     Log.LOG(Log.Level.ERROR, "XXXXXXXX");
+        //     send(text_event);
+        // }
+
         return true;
     }
 
@@ -169,6 +184,8 @@ public class ClientConnection implements Runnable, EventEngine
     public boolean handleNewRoom(NewRoomEvent event)
     {
         // vocal_server_.add_room(new ServerRoom(event.room(), vocal_server_));
+        broadcast(event);
+
         return true;
     }
 
@@ -176,6 +193,8 @@ public class ClientConnection implements Runnable, EventEngine
     public boolean handleRemoveRoom(RemoveRoomEvent event)
     {
         // vocal_server_.remove_room(event.room());
+        broadcast(event);
+
         return true;
     }
 
@@ -183,6 +202,7 @@ public class ClientConnection implements Runnable, EventEngine
     public boolean handleVoice(VoiceEvent event)
     {
         Log.LOG(Log.Level.INFO, "handleVoice");
+        broadcast(event);
         return true;
     }
 
@@ -191,6 +211,10 @@ public class ClientConnection implements Runnable, EventEngine
     {
         Log.LOG(Log.Level.INFO, "handleText from " + event.userName() + ": " + event.textPacket());
 
+        ServerRoom current_room = vocal_server_.rooms().get(currentRoom_);
+
+        current_room.add_to_history(event);
+        broadcast(event);
         return true;
     }
 
@@ -282,6 +306,7 @@ public class ClientConnection implements Runnable, EventEngine
     {
         try
         {
+            event.uuid(uuid_);
             boolean res = vocal_server_.add_to_broadcast(event);
         }
         catch (Exception e)
@@ -343,7 +368,7 @@ public class ClientConnection implements Runnable, EventEngine
 
     private boolean send_server_current_status()
     {
-        Vector<ServerRoom> rooms = vocal_server_.rooms();
+        Vector<ServerRoom> rooms = vocal_server_.rooms_vector();
         for (ServerRoom room : rooms)
         {
             if (room.name().equals("Lobby"))
@@ -362,6 +387,14 @@ public class ClientConnection implements Runnable, EventEngine
             }
             EnterRoomEvent connection_event = new EnterRoomEvent(uuid_, client_conn.user_name(), client_conn.currentRoom());
             send(connection_event);
+        }
+
+        // Updating Lobby
+        boolean res = vocal_server_.update_room(uuid_, null, currentRoom_);
+        if (res == false)
+        {
+            Log.LOG(Log.Level.ERROR, "send server current status: error: could not update lobby room");
+            return false;
         }
 
         return true;
