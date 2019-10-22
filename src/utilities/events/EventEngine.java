@@ -40,9 +40,6 @@ public interface EventEngine
 			case ENTER_ROOM:
 				return handleEnterRoom((EnterRoomEvent) event);
 
-			case CHANGE_PSEUDO:
-				return handleChangePseudo((ChangePseudoEvent) event);
-				
 			default:
 				return false;
 		}
@@ -63,7 +60,5 @@ public interface EventEngine
 	public boolean handleText(TextEvent event);
 
 	public boolean handleVoice(VoiceEvent event);
-	
-	public boolean handleChangePseudo(ChangePseudoEvent event);
 
 }

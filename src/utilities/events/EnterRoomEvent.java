@@ -32,7 +32,7 @@ public class EnterRoomEvent extends Event
 
 // PRIVATE ATTRIBUTES
 
-    final String userName_;
-    final String roomName_;
+    private final String userName_;
+    private final String roomName_;
 
 }

@@ -30,7 +30,6 @@ public abstract class Event implements Serializable
 		NEW_ROOM,
 		REMOVE_ROOM,
 		ENTER_ROOM,
-		CHANGE_PSEUDO,
 		MAX_EVENT_TYPE;
 	}
 

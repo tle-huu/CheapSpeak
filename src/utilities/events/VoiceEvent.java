@@ -16,18 +16,25 @@ public class VoiceEvent extends Event
 // PUBLIC METHODS
 	
 	// Constructor
-	public VoiceEvent(UUID uuid, SoundPacket soundPacket)
+	public VoiceEvent(final UUID uuid, final String userName, final SoundPacket soundPacket)
 	{
 		super(EventType.VOICE, uuid);
+		userName_ = userName;
 		soundPacket_ = soundPacket;
 	}
+	
+	public String userName()
+	{
+		return userName_;
+	}
 
-	public final SoundPacket soundPacket()
+	public SoundPacket soundPacket()
 	{
 		return soundPacket_;
 	}
 
 // PRIVATE ATTRIBUTE
 	
-	final private SoundPacket soundPacket_;
+	private final String      userName_;
+	private final SoundPacket soundPacket_;
 }

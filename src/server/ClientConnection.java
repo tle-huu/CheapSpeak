@@ -218,13 +218,6 @@ public class ClientConnection implements Runnable, EventEngine
         return true;
     }
 
-    @Override
-    public boolean handleChangePseudo(ChangePseudoEvent event)
-    {
-            Log.LOG(Log.Level.INFO, "handleChangePseudo from " + event.oldPseudo() + " to " + event.newPseudo());
-            return true;
-    }
-
     public int port()
     {
         return socket_.getPort();
