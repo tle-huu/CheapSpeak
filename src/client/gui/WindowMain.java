@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,7 +27,6 @@ import javax.swing.JPanel;
 import javax.swing.tree.TreePath;
 
 import client.stub.Client;
-import utilities.events.ChangePseudoEvent;
 import utilities.events.ConnectionEvent;
 import utilities.events.DisconnectionEvent;
 import utilities.events.Event;
@@ -54,8 +54,8 @@ public class WindowMain extends JFrame implements EventEngine
 		super();
 		
 		// Set default room
-		defaultRoom_ = new Room("Lobby");
-		Rooms_.add(defaultRoom_);
+		defaultRoom_ = new Room(DEFAULT_ROOM_NAME);
+		rooms_.add(defaultRoom_);
 		
 		// Set the window
 		this.setTitle("Window Main");
@@ -76,16 +76,6 @@ public class WindowMain extends JFrame implements EventEngine
 		this.setContentPane(panelConnect_);
 	}
 	
-	public static List<Room> rooms()
-	{
-		return Rooms_;
-	}
-	
-	public static String Pseudo()
-	{
-		return Pseudo_;
-	}
-	
 	public void start()
 	{
 		this.setVisible(true);
@@ -101,12 +91,16 @@ public class WindowMain extends JFrame implements EventEngine
 		String pseudo = event.userName();
 		
 		// Add the new client
-		addClient(defaultRoom_.name(), pseudo);
+		addClient(DEFAULT_ROOM_NAME, pseudo);
 		
-		// Set the current room to default room if this is the user
-		if (Pseudo_.equals(pseudo))
+		// Check if this is the current user
+		if (pseudo_.equals(pseudo))
 		{
-			currentRoom_ = defaultRoom_.name();
+			// Set the current room to default room
+			currentRoom_ = DEFAULT_ROOM_NAME;
+			
+			// Start the audio processor
+			//AUDIOPROCESSORaudioProcessor_.startMicrophoneThread();
 		}
 		
 		return true;
@@ -166,6 +160,9 @@ public class WindowMain extends JFrame implements EventEngine
 	{
 		Log.LOG(Log.Level.INFO, "Voice event received");
 		
+		// Send the sound packet to the audio processor
+		//AUDIOPROCESSORaudioProcessor_.playSoundPacket(event);
+		
 		return true;
 	}
 	
@@ -179,9 +176,9 @@ public class WindowMain extends JFrame implements EventEngine
 		String txt = event.textPacket();
 		
 		// Push the message on the panel if it's not the user's message
-		if (!Pseudo_.equals(pseudo))
+		if (!pseudo_.equals(pseudo))
 		{
-			panelMain_.panelChat().pushMessage(txt, pseudo);
+			panelMain_.panelChat().pushMessage(txt, pseudo, false);
 		}
 		
 		return true;
@@ -203,32 +200,15 @@ public class WindowMain extends JFrame implements EventEngine
 		addClient(roomName, pseudo);
 		
 		// Update the room if needed
-		if (Pseudo_.equals(pseudo))
+		if (pseudo_.equals(pseudo))
 		{
+			// Update the current room
 			currentRoom_ = roomName;
 			panelMain_.resetChat();
+			
+			// Unmute the audio processor
+			//AUDIOPROCESSORaudioProcessor_.unmute();
 		}
-		
-		return true;
-    }
-	
-	@Override
-	public boolean handleChangePseudo(ChangePseudoEvent event)
-    {
-		Log.LOG(Log.Level.INFO, "Change pseudo event received");
-		
-		// Get the old and new pseudo
-		String oldPseudo = event.oldPseudo();
-		String newPseudo = event.newPseudo();
-		
-		// Change the current pseudo if needed
-		if (Pseudo_.equals(oldPseudo))
-		{
-			Pseudo_ = newPseudo;
-		}
-		
-		// Change the username in the tree
-		changeClient(oldPseudo, newPseudo);
 		
 		return true;
     }
@@ -245,8 +225,10 @@ public class WindowMain extends JFrame implements EventEngine
 		menuBar_.disconnect().addActionListener(new DisconnectListener());
 		menuBar_.exit().addActionListener(new ExitListener());
 		
+		// Speaker menu
+		menuBar_.mute().addActionListener(new MuteListener());
+		
 		// Appearance menu
-		menuBar_.changePseudo().addActionListener(new ChangePseudoListener());
 		ThemeListener tl = new ThemeListener();
 		menuBar_.light().addActionListener(tl);
 		menuBar_.dark().addActionListener(tl);
@@ -268,7 +250,7 @@ public class WindowMain extends JFrame implements EventEngine
 		if (client_ != null)
 		{
 			// Send the disconnection message to the server
-			Event event = new DisconnectionEvent(null, Pseudo_);
+			Event event = new DisconnectionEvent(null, pseudo_);
 			client_.send_event(event);
 			
 			// End the connection
@@ -279,12 +261,12 @@ public class WindowMain extends JFrame implements EventEngine
 		}
 		
 		// Reset the rooms
-		Rooms_ = new ArrayList<Room>();
+		rooms_ = new ArrayList<Room>();
 		defaultRoom_.clear();
-		Rooms_.add(defaultRoom_);
+		rooms_.add(defaultRoom_);
 		
 		// Stop listening
-		listening_ = false;
+		listening_.set(false);
 	}
 	
 	private void exit()
@@ -300,24 +282,24 @@ public class WindowMain extends JFrame implements EventEngine
 		System.exit(0);
 	}
 	
-	private void addRoom(String room)
+	private void addRoom(final String room)
 	{
 		// Add the room to the list
 		Room newRoom = new Room(room);
-		Rooms_.add(newRoom);
+		rooms_.add(newRoom);
 		
 		// Update the tree
 		panelMain_.tree().addRoom(newRoom);
 	}
 	
-	private void removeRoom(String room)
+	private void removeRoom(final String room)
 	{
 		// Update the room
-		for (Room r: Rooms_)
+		for (Room r: rooms_)
 		{
 			if (r.name().equals(room))
 			{
-				Rooms_.remove(r);
+				rooms_.remove(r);
 				break;
 			}
 		}
@@ -326,10 +308,10 @@ public class WindowMain extends JFrame implements EventEngine
 		panelMain_.tree().removeRoom(room);
 	}
 	
-	private void addClient(String room, String client)
+	private void addClient(final String room, final String client)
 	{
 		// Update the room
-		for (Room r: Rooms_)
+		for (Room r: rooms_)
 		{
 			if (r.name().equals(room))
 			{
@@ -342,11 +324,11 @@ public class WindowMain extends JFrame implements EventEngine
 		panelMain_.tree().addClient(room, client);
 	}
 	
-	private void removeClient(String client)
+	private void removeClient(final String client)
 	{
 		// Update the room
 		String room = null;
-		for (Room r: Rooms_)
+		for (Room r: rooms_)
 		{
 			boolean isRemoved = r.removeClient(client);
 			if (isRemoved)
@@ -360,28 +342,6 @@ public class WindowMain extends JFrame implements EventEngine
 		if (room != null)
 		{
 			panelMain_.tree().removeClient(room, client);
-		}
-	}
-	
-	private void changeClient(String oldClient, String newClient)
-	{
-		// Update the room
-		String room = null;
-		for (Room r: Rooms_)
-		{
-			boolean isRemoved = r.removeClient(oldClient);
-			if (isRemoved)
-			{
-				room = r.name();
-				break;
-			}
-		}
-		
-		// Update the tree
-		if (room != null)
-		{
-			panelMain_.tree().removeClient(room, oldClient);
-			panelMain_.tree().addClient(room, newClient);
 		}
 	}
 	
@@ -403,8 +363,8 @@ public class WindowMain extends JFrame implements EventEngine
 				lock_.unlock();
 			}
 			Log.LOG(Log.Level.INFO, "Start listening");
-			listening_ = true;
-			while (listening_ && client_ != null)
+			listening_.set(true);
+			while (listening_.get() && client_ != null)
 			{
 				Event event = client_.getEvent();
 				if (event != null)
@@ -416,7 +376,7 @@ public class WindowMain extends JFrame implements EventEngine
 					}
 				}
 			}
-			listening_ = false;
+			listening_.set(false);
 			Log.LOG(Log.Level.INFO, "Stop listening");
 		}
 	}
@@ -473,7 +433,7 @@ public class WindowMain extends JFrame implements EventEngine
 			}
 			
 			// Create a client and connect to the server
-			boolean isConnected = noConnectionMode_;
+			boolean isConnected = NO_CONNECTION_MODE;
 			try
 			{
 				client_ = new Client(host, port);
@@ -492,15 +452,19 @@ public class WindowMain extends JFrame implements EventEngine
 			if (isConnected)
 			{
 				// Set the pseudo
-				Pseudo_ = pseudo;
+				pseudo_ = pseudo;
 				
 				// Switch to the main panel
 				panelMain_ = new PanelMain();
 				panelMain_.setDividerLocation(width_ * 20 / 100);
+				panelMain_.tree().init(rooms_);
 				panelMain_.tree().addMouseListener(new RoomAdapter());
 				panelMain_.panelChat().sendButton().addActionListener(new SendListener());
 				setContentPane(panelMain_);
 				revalidate();
+				
+				// Create the audio processor
+				//AUDIOPROCESSORaudioProcessor_ = new AudioProcessor(client);
 				
 				// Reset the connect/disconnect buttons
 				menuBar_.connect().setEnabled(false);
@@ -555,12 +519,12 @@ public class WindowMain extends JFrame implements EventEngine
 			}
 			
 			// Push the message on the panel
-			panelChat.pushMessage(txt, Pseudo_);
+			panelChat.pushMessage(txt, pseudo_, true);
 			
 			// Send the message to the server
 			if (client_ != null)
 			{
-				Event event = new TextEvent(null, Pseudo_, txt);
+				Event event = new TextEvent(null, pseudo_, txt);
 				client_.send_event(event);
 			}
 		}
@@ -593,10 +557,13 @@ public class WindowMain extends JFrame implements EventEngine
 		        			currentRoom_ = null;
 		        			panelMain_.resetChat();
 		        			
+		        			// Mute the audio processor
+		        			//AUDIOPROCESSORaudioProcessor_.mute();
+		        			
 		        			// Send the enter room event to the server
 		        			if (client_ != null)
 							{
-								Event event = new EnterRoomEvent(null, Pseudo_, roomName);
+								Event event = new EnterRoomEvent(null, pseudo_, roomName);
 								client_.send_event(event);
 							}
 		        		}
@@ -624,35 +591,19 @@ public class WindowMain extends JFrame implements EventEngine
 		}
 	}
 	
-	class ChangePseudoListener implements ActionListener
+	class MuteListener implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// Break if not in the main panel
-			if (panelMain_ == null)
+			isMuted_ = menuBar_.mute().isSelected();
+			if (isMuted_)
 			{
-				// Inform the client he cannot change his pseudo on this page
-				JOptionPane.showMessageDialog(null, 
-											  "You cannot change your pseudo on this page !", 
-											  "Information", 
-											  JOptionPane.INFORMATION_MESSAGE);
-				
-				// Break
-				return ;
+				//AUDIOPROCESSORaudioProcessor_.mute();
 			}
-			
-			// Create an input window to get the new pseudo
-			String newPseudo = JOptionPane.showInputDialog(null, 
-														   "Enter a new pseudo", 
-														   "Change your pseudo", 
-														   JOptionPane.QUESTION_MESSAGE);
-			
-			// Send the change pseudo event to the server
-        	if (client_ != null)
+			else
 			{
-				Event event = new ChangePseudoEvent(null, Pseudo_, newPseudo);
-				client_.send_event(event);
+				//AUDIOPROCESSORaudioProcessor_.unmute();
 			}
 		}
 	}
@@ -662,7 +613,7 @@ public class WindowMain extends JFrame implements EventEngine
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// ...
+			// TODO
 		}
 	}
 	
@@ -689,13 +640,12 @@ public class WindowMain extends JFrame implements EventEngine
 		public void actionPerformed(ActionEvent e)
 		{
 			// Set the shortcuts list
-			String shortcuts = "Connect:        ctrl+e\n"
-							 + "Disconnect:     ctrl+d\n"
-							 + "Exit:           ctrl+w\n"
-							 + "Change pseudo:  ctrl+p\n"
-							 + "Change theme:   ctrl+t\n"
-							 + "Fullscreen:     ctrl+f\n"
-							 + "Contribute:     ctrl+b";
+			String shortcuts = "Connect:    ctrl+e\n"
+							 + "Disconnect:    ctrl+d\n"
+							 + "Exit:    ctrl+w\n"
+							 + "Mute:    ctrl+m\n"
+							 + "Fullscreen:    ctrl+f\n"
+							 + "Contribute:    ctrl+b";
 			
 			// Display an information message
 			JOptionPane.showMessageDialog(null, 
@@ -720,10 +670,12 @@ public class WindowMain extends JFrame implements EventEngine
 
 // PRIVATE ATTRIBUTES
 	
-	// Event listener
-	private final   Lock lock_ = new ReentrantLock();
-	private final   Condition cond_ = lock_.newCondition();
-	private boolean listening_ = false;
+	// Client
+	private Client          client_;
+	private final Lock      lock_ = new ReentrantLock();
+	private final Condition cond_ = lock_.newCondition();
+	private AtomicBoolean   listening_ = new AtomicBoolean(false);
+	//AUDIOPROCESSORprivate AudioProcessor  audioProcessor_;
 	
 	// Window
 	private int          width_ = 1080;
@@ -732,13 +684,12 @@ public class WindowMain extends JFrame implements EventEngine
 	private PanelConnect panelConnect_;
 	private PanelMain    panelMain_;
 	
-	// Client
-	private Client client_;
-	
 	// State
-	private static List<Room> Rooms_ = new ArrayList<Room>();
-	private Room              defaultRoom_;
-	private String            currentRoom_ = null;
-	private static String     Pseudo_ = "default_";
-	private boolean           noConnectionMode_ = true;
+	private List<Room>    rooms_ = new ArrayList<Room>();
+	private Room          defaultRoom_;
+	private final String  DEFAULT_ROOM_NAME = "Lobby";
+	private String        currentRoom_ = null;
+	private String        pseudo_ = "default_";
+	private boolean       isMuted_ = false;
+	private final boolean NO_CONNECTION_MODE = true;
 }

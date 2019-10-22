@@ -9,7 +9,7 @@ public class Room
 // PUBLIC METHODS
 	
 	// Constructor
-	public Room(String name)
+	public Room(final String name)
 	{
 		name_ = name;
 	}
@@ -24,12 +24,12 @@ public class Room
 		return clients_;
 	}
 	
-	public void addClient(String client)
+	public void addClient(final String client)
 	{
 		clients_.add(client);
 	}
 	
-	public boolean removeClient(String client)
+	public boolean removeClient(final String client)
 	{
 		return clients_.remove(client);
 	}

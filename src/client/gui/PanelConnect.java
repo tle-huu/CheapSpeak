@@ -163,9 +163,9 @@ public class PanelConnect extends JPanel
 	
 	private JButton connectButton_;
 	
-	private Font fontTitle_ = new Font("Arial", Font.BOLD, 36),
-				 fontLabel_ = new Font("Arial", Font.BOLD, 24),
-				 fontField_ = new Font("Arial", Font.PLAIN, 18);
+	private final Font fontTitle_ = new Font("Arial", Font.BOLD, 36),
+				 	   fontLabel_ = new Font("Arial", Font.BOLD, 24),
+				 	   fontField_ = new Font("Arial", Font.PLAIN, 18);
 	
-	private Color backgroundColor_ = new Color(0xFFFCBA);
+	private final Color backgroundColor_ = new Color(0xFFFCBA);
 }

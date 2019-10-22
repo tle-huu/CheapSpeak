@@ -45,7 +45,7 @@ public class SplashScreen extends JWindow
 		// Set the bar
 		bar_ = new JProgressBar();
 		bar_.setMinimum(0);
-		bar_.setMaximum(LAUNCHTIME * 100);
+		bar_.setMaximum(LAUNCH_TIME * 100);
 		bar_.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		bar_.setForeground(Color.CYAN);
 		this.getContentPane().add(bar_, BorderLayout.SOUTH);
@@ -93,5 +93,5 @@ public class SplashScreen extends JWindow
 	private WindowMain   wm_;
 	private JProgressBar bar_;
 	
-	private final int LAUNCHTIME = 1; // in seconds
+	private final int LAUNCH_TIME = 1; // in seconds
 }

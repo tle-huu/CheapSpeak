@@ -98,7 +98,7 @@ public class PanelChat extends JPanel
 		return otherMessageColor_;
 	}
 	
-	public void pushMessage(String txt, String pseudo)
+	public void pushMessage(final String txt, final String pseudo, final boolean self)
 	{
 		// Break if the message is empty
 		if (txt.isEmpty())
@@ -138,7 +138,7 @@ public class PanelChat extends JPanel
 		panel.setLayout(new BorderLayout());
 		int width = messagePanel_.getWidth();
 		int padding = (int) ((float) width * 0.25f);
-		if (!pseudo.equals(WindowMain.Pseudo()))
+		if (!self)
 		{
 			panel.setBackground(otherMessageColor_);
 			panel.setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, backgroundColor_));
@@ -167,12 +167,12 @@ public class PanelChat extends JPanel
 	private JButton   sendButton_;
 	private JPanel    messagePanel_;
 	
-	private Font fontText_ = new Font("Arial", Font.PLAIN, 14),
-				 fontPseudo_ = new Font("Arial", Font.BOLD, 14);
+	private final Font fontText_ = new Font("Arial", Font.PLAIN, 14),
+				 	   fontPseudo_ = new Font("Arial", Font.BOLD, 14);
 	
-	private Color backgroundColor_ = new Color(0xfffcba),
-				  userMessageColor_ = new Color(0x78f054),
-				  otherMessageColor_ = new Color(0xf5ffe8);
+	private final Color backgroundColor_ = new Color(0xfffcba),
+				  		userMessageColor_ = new Color(0x78f054),
+				  		otherMessageColor_ = new Color(0xf5ffe8);
 	
 	private final SimpleDateFormat SDF = new SimpleDateFormat("HH:mm");
 }

@@ -46,7 +46,6 @@ public class Speaker
 		}
 		catch (LineUnavailableException err)
 		{
-
 	    	Log.LOG(Log.Level.ERROR, "Error opening Speaker line: " + err.getMessage());
 			return false;
 		}
@@ -61,7 +60,6 @@ public class Speaker
 	public int write(byte[] buffer, int offset, int length)
 	{
          return speaker_.write(buffer, 0, length);
-
 	}
 
 	public void stop()

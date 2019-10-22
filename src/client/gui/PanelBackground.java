@@ -17,7 +17,7 @@ public class PanelBackground extends JPanel
 // PUBLIC METHODS
 
 	// Constructor
-	public PanelBackground(Image img)
+	public PanelBackground(final Image img)
 	{
 		img_ = img;
 		this.setLayout(new BorderLayout());
@@ -31,5 +31,5 @@ public class PanelBackground extends JPanel
 	
 // PRIVATE ATTRIBUTES
 	
-	private Image img_;
+	private final Image img_;
 }

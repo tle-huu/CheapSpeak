@@ -23,9 +23,13 @@ public class TreeRoom extends JTree
 		model_ = (DefaultTreeModel) this.getModel();
 		root_ = new DefaultMutableTreeNode("Rooms");
 		this.setRootVisible(false);
-		for (int i = 0; i < WindowMain.rooms().size(); ++i)
+	}
+	
+	public void init(final List<Room> rooms)
+	{
+		for (int i = 0; i < rooms.size(); ++i)
 		{
-			Room room = WindowMain.rooms().get(i);
+			Room room = rooms.get(i);
 			DefaultMutableTreeNode roomNode = new DefaultMutableTreeNode(room);
 			List<String> clients = room.clients();
 			for (int j = 0; j < clients.size(); ++j)
@@ -40,7 +44,7 @@ public class TreeRoom extends JTree
 		expand();
 	}
 	
-	public void addRoom(Room room)
+	public void addRoom(final Room room)
 	{
 		DefaultMutableTreeNode roomNode = new DefaultMutableTreeNode(room);
 		root_.add(roomNode);
@@ -48,7 +52,7 @@ public class TreeRoom extends JTree
 		expand();
 	}
 	
-	public void removeRoom(String room)
+	public void removeRoom(final String room)
 	{
 		int roomCount = root_.getChildCount();
 		for (int i = 0; i < roomCount; ++i)
@@ -64,7 +68,7 @@ public class TreeRoom extends JTree
 		expand();
 	}
 	
-	public void addClient(String room, String client)
+	public void addClient(final String room, final String client)
 	{
 		int roomCount = root_.getChildCount();
 		for (int i = 0; i < roomCount; ++i)
@@ -80,7 +84,7 @@ public class TreeRoom extends JTree
 		expand();
 	}
 	
-	public void removeClient(String room, String client)
+	public void removeClient(final String room, final String client)
 	{
 		int roomCount = root_.getChildCount();
 		for (int i = 0; i < roomCount; ++i)

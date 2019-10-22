@@ -34,15 +34,13 @@ public class MenuBar extends JMenuBar
 		connection_.add(exit_);
 		
 		// Speaker menu
+		mute_.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
+		speaker_.add(mute_);
 		speaker_.add(volume_);
 		
 		// Appearance menu
-		changePseudo_.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK));
-		appearance_.add(changePseudo_);
 		themeButtonGroup_.add(light_);
 		themeButtonGroup_.add(dark_);
-		light_.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK));
-		dark_.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK));
 		theme_.add(light_);    
 		theme_.add(dark_);
 		light_.setSelected(true);
@@ -88,11 +86,6 @@ public class MenuBar extends JMenuBar
 		return volume_;
 	}
 
-	public JMenuItem changePseudo()
-	{
-		return changePseudo_;
-	}
-
 	public JMenuItem shortcuts()
 	{
 		return shortcuts_;
@@ -112,6 +105,11 @@ public class MenuBar extends JMenuBar
 	{
 		return dark_;
 	}
+	
+	public JCheckBoxMenuItem mute()
+	{
+		return mute_;
+	}
 
 	public JCheckBoxMenuItem fullscreen()
 	{
@@ -130,7 +128,6 @@ public class MenuBar extends JMenuBar
 					  disconnect_ = new JMenuItem("Disconnect"),
 					  exit_ = new JMenuItem("Exit"),
 					  volume_ = new JMenuItem("Volume"),
-					  changePseudo_ = new JMenuItem("Change pseudo"),
 					  shortcuts_ = new JMenuItem("Shortcuts"),
 					  contribute_ = new JMenuItem("Contribute");
 	
@@ -139,5 +136,6 @@ public class MenuBar extends JMenuBar
 	
 	private ButtonGroup themeButtonGroup_ = new ButtonGroup();
 	
-	private JCheckBoxMenuItem fullscreen_ = new JCheckBoxMenuItem("Fullscreen");
+	private JCheckBoxMenuItem mute_ = new JCheckBoxMenuItem("Mute"),
+							  fullscreen_ = new JCheckBoxMenuItem("Fullscreen");
 }
