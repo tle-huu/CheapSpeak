@@ -97,6 +97,8 @@ public class Broadcaster extends Thread
 
             for (ClientConnection client_conn : room.clients())
             {
+                if (event.type() == Event.EventType.VOICE && event.uuid() == client_conn.uuid())
+                    continue;
                 client_conn.send(event);
             }
         }
@@ -105,7 +107,6 @@ public class Broadcaster extends Thread
             // Sending the packet to remaining connected clients
             for (ClientConnection client_conn : vocal_server_.clients().values())
             {
-
                 client_conn.send(event);
             }
 
