@@ -162,24 +162,17 @@ public class AudioProcessor{
 	public void mute(){}
 	public void unmute(){}
 	public void reset(){} 
+	public void create_Audio_channel(){}
+	public void play_sound_packet(VoiceEvent event) {}
 	 
     
     // PRIVATE
- 
-    // Voice IO
+	
     private AtomicBoolean running_ = new AtomicBoolean(true);
-    // Voice IO
     private Microphone microphone_ = new Microphone();
 	private AtomicBoolean muted_ = new AtomicBoolean(false);
     private static ReentrantLock lock  =  new ReentrantLock();
     //private Booleen is  =  1; 
     private Hashtable<UUID, AudioChannel> audio_channels_ = new Hashtable<UUID, AudioChannel>();
-
-    
-      		
-  /*
-      - audiochannels : Hashtable<String, AudioChannel>
-      - client : Client
-       */
 	
 }
