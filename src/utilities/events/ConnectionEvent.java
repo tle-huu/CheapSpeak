@@ -3,18 +3,14 @@ package utilities.events;
 import java.util.UUID;
 
 // A new user is connected
+@SuppressWarnings("serial")
 public class ConnectionEvent extends Event
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 224199952016058665L;
 	
 // PUBLIC METHODS
 	
 	// Constructor
-	public ConnectionEvent(UUID uuid, String userName)
+	public ConnectionEvent(final UUID uuid, final String userName)
 	{
 		super(EventType.CONNECTION, uuid);
 		userName_ = userName;
@@ -27,5 +23,6 @@ public class ConnectionEvent extends Event
 	
 // PRIVATE ATTRIBUTE
 	
-	private String userName_;
+	private final String userName_;
+	
 }

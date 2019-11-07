@@ -2,13 +2,9 @@ package utilities.events;
 
 import java.util.UUID;
 
+@SuppressWarnings("serial")
 public class EnterRoomEvent extends Event
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8743541814208394763L;
 	
 // PUBLIC METHODS
 

@@ -5,13 +5,9 @@ import java.util.UUID;
 import utilities.SoundPacket;
 
 // Voice packet message
+@SuppressWarnings("serial")
 public class VoiceEvent extends Event
 {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3130208610591615987L;
 
 // PUBLIC METHODS
 	
@@ -37,4 +33,5 @@ public class VoiceEvent extends Event
 	
 	private final String      userName_;
 	private final SoundPacket soundPacket_;
+	
 }

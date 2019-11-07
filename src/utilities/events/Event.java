@@ -10,13 +10,9 @@ import java.util.UUID;
  * An event is the main communication system between clients and the server
  * An event implements the Serializable interface to be able to be sent as an object
  */
+@SuppressWarnings("serial")
 public abstract class Event implements Serializable
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8464650833482806221L;
 
 // PUBLIC METHODS
 	
@@ -31,7 +27,7 @@ public abstract class Event implements Serializable
 		REMOVE_ROOM,
 		ENTER_ROOM,
 		MAX_EVENT_TYPE;
-	}
+	};
 
 	public final EventType type()
 	{
@@ -48,7 +44,7 @@ public abstract class Event implements Serializable
 		return uuid_;
 	}
 
-	public void uuid(UUID uuid)
+	public final void uuid(final UUID uuid)
 	{
 		uuid_ = uuid;
 	}
@@ -56,7 +52,7 @@ public abstract class Event implements Serializable
 // PROTECTED METHOD
 	
 	// Constructor
-	protected Event(EventType event_type, UUID uuid)
+	protected Event(final EventType event_type, final UUID uuid)
 	{
 		type_ = event_type;
 		uuid_ = uuid;
@@ -72,4 +68,5 @@ public abstract class Event implements Serializable
 
 	// UUID of the event sender
 	protected UUID uuid_;
+	
 }

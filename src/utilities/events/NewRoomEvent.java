@@ -2,13 +2,9 @@ package utilities.events;
 
 import java.util.UUID;
 
+@SuppressWarnings("serial")
 public class NewRoomEvent extends Event
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -9024506760159173383L;
 
 // PUBLIC METHODS
 
@@ -26,6 +22,6 @@ public class NewRoomEvent extends Event
 
 // PRIVATE ATTRIBUTE
 
-	final private String roomName_;
+	private final String roomName_;
 	
 }

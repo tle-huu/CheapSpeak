@@ -6,6 +6,9 @@ package utilities.infra;
  */
 public class Log
 {
+	
+// PUBLIC ENUM
+	
 	public enum Level
 	{
 	

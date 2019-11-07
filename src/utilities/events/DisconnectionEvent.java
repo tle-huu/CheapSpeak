@@ -3,18 +3,14 @@ package utilities.events;
 import java.util.UUID;
 
 // A user has been disconnected
+@SuppressWarnings("serial")
 public class DisconnectionEvent extends Event
 {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4325144575299946329L;
 
 // PUBLIC METHODS
 	
 	// Constructor
-	public DisconnectionEvent(UUID uuid, String userName)
+	public DisconnectionEvent(final UUID uuid, final String userName)
 	{
 		super(EventType.DISCONNECTION, uuid);
 		userName_ = userName;
@@ -28,4 +24,5 @@ public class DisconnectionEvent extends Event
 // PRIVATE ATTRIBUTE
 	
 	private final String userName_;
+	
 }

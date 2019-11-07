@@ -4,13 +4,9 @@ package utilities.events;
  * The HandShakeEvent is a shell servers and clients to initiate the communication
  *
  */
+@SuppressWarnings("serial")
 public class HandshakeEvent extends Event
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1809464133655976084L;
 	
 // PUBLIC METHODS
 
@@ -20,7 +16,7 @@ public class HandshakeEvent extends Event
 		super(EventType.HANDSHAKE, null);
 	}
 
-	public void state(State state)
+	public void state(final State state)
 	{
 		state_ = state;
 	}
@@ -50,7 +46,6 @@ public class HandshakeEvent extends Event
 		return magicWord_;
 	}
 
-
 	public enum State
 	{
 		WAITING,
@@ -59,7 +54,7 @@ public class HandshakeEvent extends Event
 		OK,
 		LISTENING,
 		BYE;
-	}
+	};
 
 // PRIVATE ATTRIBUTES
 	
@@ -68,4 +63,5 @@ public class HandshakeEvent extends Event
 	private String userName_;
 
 	private int magicWord_;
+	
 }
