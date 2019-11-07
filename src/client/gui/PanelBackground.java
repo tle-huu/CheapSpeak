@@ -6,13 +6,9 @@ import java.awt.Image;
 
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 public class PanelBackground extends JPanel
 {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5078444344797652105L;
 
 // PUBLIC METHODS
 
@@ -29,7 +25,8 @@ public class PanelBackground extends JPanel
 		g.drawImage(img_, 0, 0, null);
 	}
 	
-// PRIVATE ATTRIBUTES
+// PRIVATE ATTRIBUTE
 	
 	private final Image img_;
+	
 }

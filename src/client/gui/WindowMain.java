@@ -14,16 +14,21 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 import client.stub.Client;
@@ -38,13 +43,9 @@ import utilities.events.VoiceEvent;
 import utilities.events.EnterRoomEvent;
 import utilities.infra.Log;
 
-public class WindowMain extends JFrame implements EventEngine
+@SuppressWarnings("serial")
+public class WindowMain extends JFrame implements EventEngine, ThemeUI
 {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3724351605438242811L;
 	
 // PUBLIC METHODS
 	
@@ -55,6 +56,7 @@ public class WindowMain extends JFrame implements EventEngine
 		
 		// Set default room
 		defaultRoom_ = new Room(DEFAULT_ROOM_NAME);
+		defaultRoom_.addClient("xX_Anonymous_Xx");
 		rooms_.add(defaultRoom_);
 		
 		// Set the window
@@ -79,6 +81,7 @@ public class WindowMain extends JFrame implements EventEngine
 	public void start()
 	{
 		this.setVisible(true);
+		Log.LOG(Log.Level.INFO, "Start");
 		eventListener();
 	}
 	
@@ -212,6 +215,22 @@ public class WindowMain extends JFrame implements EventEngine
 		
 		return true;
     }
+	
+	@Override
+	public void setThemeUI()
+	{
+		// Set theme UI of panel connect
+		if (panelConnect_ != null)
+		{
+			panelConnect_.setThemeUI();
+		}
+		
+		// Set theme UI of panel main
+		if (panelMain_ != null)
+		{
+			panelMain_.setThemeUI();
+		}
+	}
 
 // PRIVATE METHODS
 	
@@ -229,9 +248,12 @@ public class WindowMain extends JFrame implements EventEngine
 		menuBar_.mute().addActionListener(new MuteListener());
 		
 		// Appearance menu
-		ThemeListener tl = new ThemeListener();
-		menuBar_.light().addActionListener(tl);
-		menuBar_.dark().addActionListener(tl);
+		ThemeListener themeListener = new ThemeListener();
+		Iterator<AbstractButton> buttonIterator = menuBar_.theme().getElements().asIterator();
+		while (buttonIterator.hasNext())
+		{
+			buttonIterator.next().addActionListener(themeListener);
+		}
 		menuBar_.fullscreen().addActionListener(new FullscreenListener());
 		
 		// Help menu
@@ -395,18 +417,18 @@ public class WindowMain extends JFrame implements EventEngine
 				JPanel messagePanel = panelChat.messagePanel();
 	        	int width = panelChat.getWidth();
 				int padding = (int) ((float) width * 0.25f);
-				Color backgroundColor = panelChat.backgroundColor();
-				Color otherMessageColor = panelChat.otherMessageColor();
 	        	for (Component pan: messagePanel.getComponents())
 		        {
 	        		Color panColor = pan.getBackground();
-	        		if (panColor.equals(otherMessageColor))
+	        		if (panColor.equals(UIManager.getColorResource("OTHER_MESSAGE_COLOR")))
 	        		{
-	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, backgroundColor));
+	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, 
+	        																	 UIManager.getColorResource("BACKGROUND_COLOR")));
 	        		}
 	        		else
 	        		{
-	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, backgroundColor));
+	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, 
+	        																	 UIManager.getColorResource("BACKGROUND_COLOR")));
 	        		}
 	        		int height = (int) pan.getPreferredSize().getHeight();
 		    		pan.setMaximumSize(new Dimension(width, height));
@@ -459,6 +481,7 @@ public class WindowMain extends JFrame implements EventEngine
 				panelMain_.setDividerLocation(width_ * 20 / 100);
 				panelMain_.tree().init(rooms_);
 				panelMain_.tree().addMouseListener(new RoomAdapter());
+				panelMain_.tree().setCellRenderer(new TreeCellRenderer());
 				panelMain_.panelChat().sendButton().addActionListener(new SendListener());
 				setContentPane(panelMain_);
 				revalidate();
@@ -613,7 +636,21 @@ public class WindowMain extends JFrame implements EventEngine
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// TODO
+			String theme = menuBar_.theme().getSelection().getActionCommand();
+			switch (theme)
+			{
+				case "Light":
+					UIManager.setTheme(UIManager.Theme.LIGHT);
+					break;
+					
+				case "Dark":
+					UIManager.setTheme(UIManager.Theme.DARK);
+					break;
+				
+				default:
+					break;
+			}
+			setThemeUI();
 		}
 	}
 	
@@ -667,6 +704,35 @@ public class WindowMain extends JFrame implements EventEngine
 										  JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
+	
+	class TreeCellRenderer extends DefaultTreeCellRenderer
+	{
+		@Override
+		public Component getTreeCellRendererComponent(JTree tree, Object value, 
+													  boolean selected, boolean expanded, 
+													  boolean isLeaf, int row, boolean focused)
+		{
+			Component component = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
+			int level = ((DefaultMutableTreeNode) value).getLevel();
+			if (level == 1)
+			{
+				this.setIcon(UIManager.getIconResource("ROOM_ICON"));
+				this.setFont(UIManager.getFontResource("FONT_TREE_ROOM"));
+			}
+			else
+			{
+				this.setIcon(UIManager.getIconResource("CLIENT_ICON"));
+				this.setFont(UIManager.getFontResource("FONT_TREE_CLIENT"));
+				String pseudo = (String) ((DefaultMutableTreeNode) value).getUserObject();
+				if (pseudo.equals(pseudo_))
+				{
+					this.setForeground(UIManager.getColorResource("TREE_PSEUDO_COLOR"));
+				}
+			}
+			this.setBackgroundNonSelectionColor(UIManager.getColorResource("TREE_COLOR"));
+			return component;
+		}
+	}
 
 // PRIVATE ATTRIBUTES
 	
@@ -692,4 +758,5 @@ public class WindowMain extends JFrame implements EventEngine
 	private String        pseudo_ = "default_";
 	private boolean       isMuted_ = false;
 	private final boolean NO_CONNECTION_MODE = true;
+	
 }

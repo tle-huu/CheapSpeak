@@ -10,13 +10,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
+@SuppressWarnings("serial")
 public class MenuBar extends JMenuBar
 {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6640246405752025617L;
 	
 // PUBLIC METHODS
 
@@ -39,11 +35,13 @@ public class MenuBar extends JMenuBar
 		speaker_.add(volume_);
 		
 		// Appearance menu
+		light_.setActionCommand(light_.getText());
+		dark_.setActionCommand(dark_.getText());
 		themeButtonGroup_.add(light_);
 		themeButtonGroup_.add(dark_);
 		theme_.add(light_);    
 		theme_.add(dark_);
-		light_.setSelected(true);
+		setDefaultTheme();
 		appearance_.add(theme_);
 		fullscreen_.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
 		appearance_.add(fullscreen_);
@@ -59,7 +57,7 @@ public class MenuBar extends JMenuBar
 		appearance_.setMnemonic('A');
 		help_.setMnemonic('H');
 
-		// Ajout des menus dans la barre de menus
+		// Add menus in the bar
 		this.add(connection_);
 		this.add(speaker_);
 		this.add(appearance_);
@@ -95,15 +93,10 @@ public class MenuBar extends JMenuBar
 	{
 		return contribute_;
 	}
-
-	public JRadioButtonMenuItem light()
-	{
-		return light_;
-	}
 	
-	public JRadioButtonMenuItem dark()
+	public ButtonGroup theme()
 	{
-		return dark_;
+		return themeButtonGroup_;
 	}
 	
 	public JCheckBoxMenuItem mute()
@@ -114,6 +107,25 @@ public class MenuBar extends JMenuBar
 	public JCheckBoxMenuItem fullscreen()
 	{
 		return fullscreen_;
+	}
+	
+// PRIVATE METHOD
+	
+	private void setDefaultTheme()
+	{
+		switch (UIManager.DEFAULT_THEME)
+		{
+			case LIGHT:
+				light_.setSelected(true);
+				break;
+				
+			case DARK:
+				dark_.setSelected(true);
+				break;
+				
+			default:
+				break;
+		}
 	}
 	
 // PRIVATE ATTRIBUTES
@@ -138,4 +150,5 @@ public class MenuBar extends JMenuBar
 	
 	private JCheckBoxMenuItem mute_ = new JCheckBoxMenuItem("Mute"),
 							  fullscreen_ = new JCheckBoxMenuItem("Fullscreen");
+	
 }

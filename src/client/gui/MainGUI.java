@@ -18,9 +18,10 @@ public class MainGUI
 	public static void getFonts()
 	{
 		String fonts[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-		for (int i = 0; i < fonts.length; i++)
+		for (String font: fonts)
 		{
-			System.out.println(fonts[i]);
+			System.out.println(font);
 		}
 	}
+	
 }

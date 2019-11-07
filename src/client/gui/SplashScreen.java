@@ -11,13 +11,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 
+@SuppressWarnings("serial")
 public class SplashScreen extends JWindow
 {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 9207185183823731551L;
 
 // PUBLIC METHODS
 	
@@ -33,7 +29,7 @@ public class SplashScreen extends JWindow
 		// Set the background
 		try
 		{
-			Image img = ImageIO.read(new File("splash_screen.png"));
+			Image img = ImageIO.read(new File(IMAGE_FILE_NAME));
 			PanelBackground pbg = new PanelBackground(img);
 			this.setContentPane(pbg);
 		}
@@ -51,7 +47,7 @@ public class SplashScreen extends JWindow
 		this.getContentPane().add(bar_, BorderLayout.SOUTH);
 		
 		// Create the main frame
-		wm_ = new WindowMain();
+		windowMain_ = new WindowMain();
 	    
 		// Start the loading
 	    Thread t = new Thread(new Loading());
@@ -69,7 +65,7 @@ public class SplashScreen extends JWindow
 		public void run()
 		{
 			// Load the bar
-			for (int val = 0; val <= bar_.getMaximum(); val++)
+			for (int val = 0; val <= bar_.getMaximum(); ++val)
 			{
 				bar_.setValue(val);
 				try
@@ -84,14 +80,17 @@ public class SplashScreen extends JWindow
 			// Close the splash screen
 			setVisible(false);
 			// Display the main frame
-			wm_.start();
+			windowMain_.start();
 		}
 	}
 	
 // PRIVATE ATTRIBUTES
 	
-	private WindowMain   wm_;
-	private JProgressBar bar_;
+	private final WindowMain   windowMain_;
+	private final JProgressBar bar_;
+	
+	private final String IMAGE_FILE_NAME = "splash_screen.png";
 	
 	private final int LAUNCH_TIME = 1; // in seconds
+	
 }

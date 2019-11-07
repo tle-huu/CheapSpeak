@@ -3,13 +3,9 @@ package client.gui;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
-public class PanelMain extends JSplitPane
+@SuppressWarnings("serial")
+public class PanelMain extends JSplitPane implements ThemeUI
 {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3080649116988544368L;
 	
 // PUBLIC METHODS
 	
@@ -41,8 +37,16 @@ public class PanelMain extends JSplitPane
 		panelChat_.repaint();
 	}
 	
+	@Override
+	public void setThemeUI()
+	{
+		treeRoom_.setThemeUI();
+		panelChat_.setThemeUI();
+	}
+	
 // PRIVATE ATTRIBUTES
 	
 	private TreeRoom  treeRoom_;
 	private PanelChat panelChat_;
+	
 }

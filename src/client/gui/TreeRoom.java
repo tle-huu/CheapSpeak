@@ -6,13 +6,9 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-public class TreeRoom extends JTree
+@SuppressWarnings("serial")
+public class TreeRoom extends JTree implements ThemeUI
 {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4466274080800189880L;
 	
 // PUBLIC METHODS
 	
@@ -20,22 +16,30 @@ public class TreeRoom extends JTree
 	public TreeRoom()
 	{
 		super();
+		
+		// Initialize the tree structure
 		model_ = (DefaultTreeModel) this.getModel();
-		root_ = new DefaultMutableTreeNode("Rooms");
+		root_ = new DefaultMutableTreeNode();
+		
+		// Disable the default double-click event
+		this.setToggleClickCount(0);
+		
+		// Set theme UI
+		setThemeUI();
+		
+		// Display the tree
 		this.setRootVisible(false);
 	}
 	
 	public void init(final List<Room> rooms)
 	{
-		for (int i = 0; i < rooms.size(); ++i)
+		for (Room room: rooms)
 		{
-			Room room = rooms.get(i);
 			DefaultMutableTreeNode roomNode = new DefaultMutableTreeNode(room);
-			List<String> clients = room.clients();
-			for (int j = 0; j < clients.size(); ++j)
+			for (String client: room.clients())
 			{
-				DefaultMutableTreeNode client = new DefaultMutableTreeNode(clients.get(j));
-				roomNode.add(client);
+				DefaultMutableTreeNode clientNode = new DefaultMutableTreeNode(client);
+				roomNode.add(clientNode);
 			}
 			root_.add(roomNode);
 		}
@@ -109,6 +113,14 @@ public class TreeRoom extends JTree
 		expand();
 	}
 	
+	@Override
+	public void setThemeUI()
+	{
+		// Set the color
+		this.setBackground(UIManager.getColorResource("TREE_COLOR"));
+		this.setForeground(UIManager.getColorResource("FONT_TREE_COLOR"));
+	}
+	
 // PRIVATE METHOD
 	
 	private void expand()
@@ -121,6 +133,7 @@ public class TreeRoom extends JTree
 	
 // PRIVATE ATTRIBUTES
 	
-	private DefaultTreeModel       model_;
-	private DefaultMutableTreeNode root_;
+	private final DefaultTreeModel       model_;
+	private final DefaultMutableTreeNode root_;
+	
 }
