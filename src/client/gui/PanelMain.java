@@ -16,6 +16,7 @@ public class PanelMain extends JSplitPane implements ThemeUI
 		treeRoom_ = new TreeRoom();
 		panelChat_ = new PanelChat();
 		this.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+		this.setDividerLocation(DIVIDER_LOCATION);
 		this.setLeftComponent(new JScrollPane(treeRoom_));
 		this.setRightComponent(panelChat_);
 	}
@@ -48,5 +49,7 @@ public class PanelMain extends JSplitPane implements ThemeUI
 	
 	private TreeRoom  treeRoom_;
 	private PanelChat panelChat_;
+	
+	private final int DIVIDER_LOCATION = 220;
 	
 }

@@ -3,18 +3,17 @@ package client.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.border.Border;
 
 @SuppressWarnings("serial")
 public class PanelChat extends JPanel implements ThemeUI
@@ -40,11 +39,11 @@ public class PanelChat extends JPanel implements ThemeUI
 		// Set the send panel
 		JPanel south = new JPanel();
 		south.setLayout(new BorderLayout());
-		south.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+		south.setBorder(BORDER_SEND_PANEL);
 		
 		// Set the send text area
 		sendTextArea_ = new JTextArea();
-		sendTextArea_.setMargin(new Insets(5, 5, 5, 5));
+		sendTextArea_.setMargin(TEXT_AREA_MARGIN);
 		sendTextArea_.setFont(UIManager.getFontResource("FONT_MESSAGE"));
 		sendTextArea_.setLineWrap(true);
 		sendTextArea_.setWrapStyleWord(true);
@@ -55,9 +54,9 @@ public class PanelChat extends JPanel implements ThemeUI
 		// Set the send button
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BorderLayout());
-		buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 0));
+		buttonPanel.setBorder(BORDER_BUTTON);
 		sendButton_ = new JButton("Send");
-		sendButton_.setPreferredSize(new Dimension(80, 45));
+		sendButton_.setPreferredSize(BUTTON_DIMENSION);
 		sendButton_.setFont(UIManager.getFontResource("FONT_MESSAGE"));
 		buttonPanel.add(sendButton_, BorderLayout.CENTER);
 		south.add(buttonPanel, BorderLayout.EAST);
@@ -84,69 +83,27 @@ public class PanelChat extends JPanel implements ThemeUI
 		return sendButton_;
 	}
 	
+	public List<PanelMessage> messages()
+	{
+		return messages_;
+	}
+	
 	public void pushMessage(final String textMessage, final String pseudo, final boolean self)
 	{
 		// Break if the message is empty
-		textMessage.trim();
 		if (textMessage.isEmpty())
 		{
 			return ;
 		}
 		
-		// Create the panels for the message
-		JPanel panel = new JPanel();
-		JLabel pseudoLabel = new JLabel();
-		JTextArea message = new JTextArea();
-		JLabel timestamp = new JLabel();
+		// Create the message
+		PanelMessage message = new PanelMessage(pseudo, textMessage, messagePanel_.getWidth(), self);
 		
-		// Set the pseudo label
-		pseudoLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		pseudoLabel.setFont(UIManager.getFontResource("FONT_PSEUDO"));
-		pseudoLabel.setText(pseudo);
+		// Add the message to the list
+		messages_.add(message);
 		
-		// Set the message label
-		message.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		message.setLineWrap(true);
-		message.setWrapStyleWord(true);
-		message.setEditable(false);
-		message.setOpaque(false);
-		message.setFont(UIManager.getFontResource("FONT_MESSAGE"));
-		message.setText(textMessage);
-		
-		// Set the timestamp label
-		Date date = new Date();
-		Timestamp ts = new Timestamp(date.getTime());
-		String time = SDF.format(ts);
-		timestamp.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		timestamp.setFont(UIManager.getFontResource("FONT_MESSAGE"));
-		timestamp.setText(time);
-		
-		// Set panel
-		panel.setLayout(new BorderLayout());
-		int width = messagePanel_.getWidth();
-		int padding = (int) ((float) width * 0.25f);
-		if (!self)
-		{
-			panel.setBackground(UIManager.getColorResource("OTHER_MESSAGE_COLOR"));
-			panel.setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, 
-															UIManager.getColorResource("BACKGROUND_COLOR")));
-		}
-		else
-		{
-			panel.setBackground(UIManager.getColorResource("USER_MESSAGE_COLOR"));
-			panel.setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, 
-															UIManager.getColorResource("BACKGROUND_COLOR")));
-		}
-		panel.add(pseudoLabel, BorderLayout.NORTH);
-		panel.add(message, BorderLayout.CENTER);
-		panel.add(timestamp, BorderLayout.EAST);
-
-		// Set the size
-		int height = (int) panel.getPreferredSize().getHeight();
-		panel.setMaximumSize(new Dimension(width, height));
-		
-		// Add the panel to the window
-		messagePanel_.add(panel);
+		// Put the message in the panel
+		messagePanel_.add(message);
 		messagePanel_.revalidate();
 	}
 	
@@ -155,6 +112,12 @@ public class PanelChat extends JPanel implements ThemeUI
 	{
 		// Message panel
 		messagePanel_.setBackground(UIManager.getColorResource("BACKGROUND_COLOR"));
+		
+		// Messages
+		for (PanelMessage message: messages_)
+		{
+			message.setThemeUI();
+		}
 	}
 	
 // PRIVATE ATTRIBUTES
@@ -163,6 +126,11 @@ public class PanelChat extends JPanel implements ThemeUI
 	private JButton   sendButton_;
 	private JPanel    messagePanel_;
 	
-	private final SimpleDateFormat SDF = new SimpleDateFormat("HH:mm");
+	private List<PanelMessage> messages_ = new ArrayList<PanelMessage>();
 	
+	private final Border    BORDER_SEND_PANEL = BorderFactory.createEmptyBorder(10, 20, 10, 20);
+	private final Border    BORDER_BUTTON = BorderFactory.createEmptyBorder(10, 20, 10, 0);
+	private final Insets    TEXT_AREA_MARGIN = new Insets(5, 5, 5, 5);
+	private final Dimension BUTTON_DIMENSION = new Dimension(80, 45);
+		
 }

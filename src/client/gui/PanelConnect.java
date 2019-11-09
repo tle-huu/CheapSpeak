@@ -11,10 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import utilities.infra.Log;
-
 @SuppressWarnings("serial")
-public class PanelConnect extends JPanel
+public class PanelConnect extends JPanel implements ThemeUI
 {
 
 // PUBLIC METHODS
@@ -33,9 +31,9 @@ public class PanelConnect extends JPanel
 		gbc.gridheight = 1;
 		
 		// Set the title
-		title_ = new JLabel("WELCOME");
+		title_ = new JLabel("Welcome");
 		title_.setHorizontalAlignment(JLabel.CENTER);
-		title_.setPreferredSize(new Dimension(250, 100));
+		title_.setPreferredSize(TITLE_DIMENSION);
 		title_.setFont(UIManager.getFontResource("FONT_TITLE"));
 		
 		// Update the constraints and add the title
@@ -47,10 +45,10 @@ public class PanelConnect extends JPanel
 		pseudoPanel_.setLayout(new BorderLayout());
 		pseudoLabel_ = new JLabel("Pseudo");
 		pseudoLabel_.setHorizontalAlignment(JLabel.CENTER);
-		pseudoLabel_.setPreferredSize(new Dimension(250, 60));
+		pseudoLabel_.setPreferredSize(LABEL_DIMENSION);
 		pseudoLabel_.setFont(UIManager.getFontResource("FONT_LABEL"));
-		pseudo_ = new JTextField("xX_Anonymous_Xx");
-		pseudo_.setPreferredSize(new Dimension(250, 30));
+		pseudo_ = new JTextField(DEFAULT_PSEUDO);
+		pseudo_.setPreferredSize(FIELD_DIMENSION);
 		pseudo_.setFont(UIManager.getFontResource("FONT_FIELD"));
 		pseudoPanel_.add(pseudoLabel_, BorderLayout.NORTH);
 		pseudoPanel_.add(pseudo_, BorderLayout.CENTER);
@@ -65,10 +63,10 @@ public class PanelConnect extends JPanel
 		ipAddressPanel_.setLayout(new BorderLayout());
 		ipAddressLabel_ = new JLabel("IP Address");
 		ipAddressLabel_.setHorizontalAlignment(JLabel.CENTER);
-		ipAddressLabel_.setPreferredSize(new Dimension(250, 60));
+		ipAddressLabel_.setPreferredSize(LABEL_DIMENSION);
 		ipAddressLabel_.setFont(UIManager.getFontResource("FONT_LABEL"));
-		ipAddress_ = new JTextField("127.0.0.1");
-		ipAddress_.setPreferredSize(new Dimension(250, 30));
+		ipAddress_ = new JTextField(DEFAULT_IP_ADDRESS);
+		ipAddress_.setPreferredSize(FIELD_DIMENSION);
 		ipAddress_.setFont(UIManager.getFontResource("FONT_FIELD"));
 		ipAddressPanel_.add(ipAddressLabel_, BorderLayout.NORTH);
 		ipAddressPanel_.add(ipAddress_, BorderLayout.CENTER);
@@ -83,10 +81,10 @@ public class PanelConnect extends JPanel
 		portPanel_.setLayout(new BorderLayout());
 		portLabel_ = new JLabel("Port");
 		portLabel_.setHorizontalAlignment(JLabel.CENTER);
-		portLabel_.setPreferredSize(new Dimension(250, 60));
+		portLabel_.setPreferredSize(LABEL_DIMENSION);
 		portLabel_.setFont(UIManager.getFontResource("FONT_LABEL"));
-		port_ = new JTextField("4242");
-		port_.setPreferredSize(new Dimension(250, 30));
+		port_ = new JTextField(DEFAULT_PORT);
+		port_.setPreferredSize(FIELD_DIMENSION);
 		port_.setFont(UIManager.getFontResource("FONT_FIELD"));
 		portPanel_.add(portLabel_, BorderLayout.NORTH);
 		portPanel_.add(port_, BorderLayout.CENTER);
@@ -99,9 +97,9 @@ public class PanelConnect extends JPanel
 		// Set the connect button
 		buttonPanel_ = new JPanel();
 		buttonPanel_.setLayout(new BorderLayout());
-		buttonPanel_.setPreferredSize(new Dimension(200, 100));
+		buttonPanel_.setPreferredSize(BUTTON_PANEL_DIMENSION);
 		connectButton_ = new JButton("CONNECT");
-		connectButton_.setPreferredSize(new Dimension(200, 50));
+		connectButton_.setPreferredSize(BUTTON_DIMENSION);
 		connectButton_.setFont(UIManager.getFontResource("FONT_LABEL"));
 		connectButton_.setBorder(BorderFactory.createRaisedBevelBorder());
 		buttonPanel_.add(connectButton_, BorderLayout.SOUTH);
@@ -117,12 +115,12 @@ public class PanelConnect extends JPanel
 	
 	public String pseudo()
 	{
-		return pseudo_.getText();
+		return pseudo_.getText().trim();
 	}
 	
 	public String host()
 	{
-		return ipAddress_.getText();
+		return ipAddress_.getText().trim();
 	}
 	
 	public int port()
@@ -131,7 +129,6 @@ public class PanelConnect extends JPanel
 		try
 		{
 			port = Integer.valueOf(port_.getText()).intValue();
-			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
 		}
 		catch(NumberFormatException e)
 		{  
@@ -145,6 +142,7 @@ public class PanelConnect extends JPanel
 		return connectButton_;
 	}
 	
+	@Override
 	public void setThemeUI()
 	{
 		// Main panel
@@ -190,5 +188,15 @@ public class PanelConnect extends JPanel
 					   port_;
 	
 	private JButton connectButton_;
+	
+	private final String DEFAULT_PSEUDO = "Anonymous";
+	private final String DEFAULT_IP_ADDRESS = "127.0.0.1";
+	private final String DEFAULT_PORT = "4242";
+	
+	private final Dimension TITLE_DIMENSION = new Dimension(250, 100);
+	private final Dimension LABEL_DIMENSION = new Dimension(250, 60);
+	private final Dimension FIELD_DIMENSION = new Dimension(250, 30);
+	private final Dimension BUTTON_PANEL_DIMENSION = new Dimension(200, 100);
+	private final Dimension BUTTON_DIMENSION = new Dimension(200, 50);
 	
 }

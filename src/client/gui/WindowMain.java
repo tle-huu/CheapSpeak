@@ -1,8 +1,6 @@
 package client.gui;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -22,10 +20,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -56,12 +52,11 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		
 		// Set default room
 		defaultRoom_ = new Room(DEFAULT_ROOM_NAME);
-		defaultRoom_.addClient("xX_Anonymous_Xx");
 		rooms_.add(defaultRoom_);
 		
 		// Set the window
-		this.setTitle("Window Main");
-		this.setSize(width_, height_);
+		this.setTitle(WINDOW_NAME);
+		this.setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new ExitAdapter());
 		this.setLocationRelativeTo(null);
@@ -72,7 +67,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		// Set the menu bar
 		initMenu();
 		
-		// Set the panel
+		// Set the connect panel
 		panelConnect_ = new PanelConnect();
 		panelConnect_.connectButton().addActionListener(new ConnectListener());
 		this.setContentPane(panelConnect_);
@@ -413,25 +408,17 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	        // Set the size of the message boxes
 			if (panelMain_ != null)
 	        {
-	        	PanelChat panelChat = panelMain_.panelChat();
-				JPanel messagePanel = panelChat.messagePanel();
+	        	// Get the panel chat
+				PanelChat panelChat = panelMain_.panelChat();
+				
+				// Get the new width 
 	        	int width = panelChat.getWidth();
-				int padding = (int) ((float) width * 0.25f);
-	        	for (Component pan: messagePanel.getComponents())
+
+	        	// Update each message
+	        	for (PanelMessage message: panelChat.messages())
 		        {
-	        		Color panColor = pan.getBackground();
-	        		if (panColor.equals(UIManager.getColorResource("OTHER_MESSAGE_COLOR")))
-	        		{
-	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10 + padding, 
-	        																	 UIManager.getColorResource("BACKGROUND_COLOR")));
-	        		}
-	        		else
-	        		{
-	        			((JPanel) pan).setBorder(BorderFactory.createMatteBorder(10, 10 + padding, 10, 10, 
-	        																	 UIManager.getColorResource("BACKGROUND_COLOR")));
-	        		}
-	        		int height = (int) pan.getPreferredSize().getHeight();
-		    		pan.setMaximumSize(new Dimension(width, height));
+	        		// Update the size
+	        		message.setWidth(width);	        		
 		        }
 	        }
 	    }
@@ -447,12 +434,20 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			int port = panelConnect_.port();
 			String pseudo = panelConnect_.pseudo();
 			
+			// Check if the pseudo is correct
+			if (pseudo.isEmpty() || pseudo.length() > PSEUDO_MAX_LENGTH)
+			{
+				Log.LOG(Log.Level.WARNING, "The pseudo " + pseudo + " is not supported");
+				return ;
+			}
+			
 			// Check if the port is correct
-			if (port < 0 || port >= 65536)
+			if (port < MIN_PORT || port > MAX_PORT)
 			{
 				Log.LOG(Log.Level.WARNING, "The port " + port + " is not supported");
 				return ;
 			}
+			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
 			
 			// Create a client and connect to the server
 			boolean isConnected = NO_CONNECTION_MODE;
@@ -478,7 +473,6 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				
 				// Switch to the main panel
 				panelMain_ = new PanelMain();
-				panelMain_.setDividerLocation(width_ * 20 / 100);
 				panelMain_.tree().init(rooms_);
 				panelMain_.tree().addMouseListener(new RoomAdapter());
 				panelMain_.tree().setCellRenderer(new TreeCellRenderer());
@@ -532,7 +526,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			panelChat.sendTextArea().grabFocus();
 			
 			// Get the text field and reset it
-			String txt = panelChat.sendTextArea().getText();
+			String txt = panelChat.sendTextArea().getText().trim();
 			panelChat.sendTextArea().setText("");
 			
 			// Break if the user is not a room
@@ -661,7 +655,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		{
 			if (!menuBar_.fullscreen().isSelected())
 			{
-				setSize(width_, height_);
+				setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 				setLocationRelativeTo(null);
 			}
 			else
@@ -686,9 +680,9 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			
 			// Display an information message
 			JOptionPane.showMessageDialog(null, 
-										  shortcuts, 
-										  "Shortcuts", 
-										  JOptionPane.INFORMATION_MESSAGE);
+					shortcuts, 
+					"Shortcuts", 
+					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 	
@@ -699,9 +693,9 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		{
 			// Display an information message
 			JOptionPane.showMessageDialog(null, 
-										  "Do not hesitate to give a tip :)", 
-										  "Be generous !", 
-										  JOptionPane.INFORMATION_MESSAGE);
+					"Do not hesitate to give a tip :)", 
+					"Be generous !", 
+					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 	
@@ -709,8 +703,8 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	{
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, 
-													  boolean selected, boolean expanded, 
-													  boolean isLeaf, int row, boolean focused)
+				boolean selected, boolean expanded, 
+				boolean isLeaf, int row, boolean focused)
 		{
 			Component component = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
 			int level = ((DefaultMutableTreeNode) value).getLevel();
@@ -744,19 +738,25 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	//AUDIOPROCESSORprivate AudioProcessor  audioProcessor_;
 	
 	// Window
-	private int          width_ = 1080;
-	private int          height_ = 720;
 	private MenuBar      menuBar_;
 	private PanelConnect panelConnect_;
 	private PanelMain    panelMain_;
 	
 	// State
-	private List<Room>    rooms_ = new ArrayList<Room>();
-	private Room          defaultRoom_;
+	private List<Room> rooms_ = new ArrayList<Room>();
+	private Room       defaultRoom_;
+	private String     currentRoom_ = null;
+	private String     pseudo_ = "default_";
+	private boolean    isMuted_ = false;
+	
+	// Final
+	private final int     DEFAULT_WIDTH = 1080;
+	private final int     DEFAULT_HEIGHT = 720;
+	private final String  WINDOW_NAME = "CheapSpeak";
 	private final String  DEFAULT_ROOM_NAME = "Lobby";
-	private String        currentRoom_ = null;
-	private String        pseudo_ = "default_";
-	private boolean       isMuted_ = false;
 	private final boolean NO_CONNECTION_MODE = true;
+	private final int     PSEUDO_MAX_LENGTH = 32;
+	private final int     MIN_PORT = 0;
+	private final int     MAX_PORT = 65535;
 	
 }
