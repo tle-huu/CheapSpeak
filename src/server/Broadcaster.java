@@ -41,25 +41,20 @@ public class Broadcaster extends Thread
             try
             {
                 Event new_event = get_new_event();
-                if (new_event == null)
+                if (new_event != null)
                 {
-                    continue;
+                    broadcast(new_event);
                 }
-
-                remove_dead_clients();
-
-                broadcast(new_event);
-
             }
             catch (Exception e)
             {
-                Log.LOG(Log.Level.FATAL, "Error in recording thread");
+                Log.LOG(Log.Level.FATAL, "Error in Broadcaster thread: " + e);
                 e.printStackTrace();
                 break ;
             }
         }
-        Log.LOG(Log.Level.INFO, "Shutting down Broadcaster thread");
 
+        Log.LOG(Log.Level.INFO, "Shutting down Broadcaster thread");
         running_.getAndSet(false);
 
         // Shutting down main server
@@ -79,9 +74,18 @@ public class Broadcaster extends Thread
 
     private void broadcast(Event event)
     {
+        // Only sending to people in the room
         if (event.type() == Event.EventType.VOICE || event.type() == Event.EventType.TEXT)
         {
-            String room_name = vocal_server_.clients().get(event.uuid()).currentRoom();
+
+            ClientConnection client = vocal_server_.get_client(event.uuid());
+
+            if (client == null)
+            {
+                Log.LOG(Log.Level.ERROR, "Error broadcasting message from client " + event.uuid().toString()+ " : client does not exist");
+                return ;
+            }
+            String room_name = client.currentRoom();
 
             if (room_name == null)
             {
@@ -105,23 +109,6 @@ public class Broadcaster extends Thread
                 client_conn.send(event);
             }
 
-        }
-    }
-
-    private void remove_dead_clients()
-    {
-        Vector<ClientConnection> dead_clients = new Vector<ClientConnection>();
-        for (ClientConnection client_conn : vocal_server_.clients().values())
-        {
-            if (!client_conn.alive())
-            {
-                dead_clients.add(client_conn);
-                continue;
-            }
-        }
-        for (ClientConnection client_conn : dead_clients)
-        {
-            vocal_server_.remove_client(client_conn);
         }
     }
 

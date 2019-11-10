@@ -63,18 +63,19 @@ public class ClientConnection implements Runnable, EventEngine
 
         boolean accepted = handshake();
 
+
+        if (accepted == false)
+        {
+            Log.LOG(Log.Level.ERROR, "Error while performing the handshake");
+            close();
+            return ;
+        }
+
         // notify others
         {
             ConnectionEvent my_connection_event = new ConnectionEvent(uuid_, user_name_);
             broadcast(my_connection_event);
         }
-
-        if (accepted == false)
-        {
-            Log.LOG(Log.Level.ERROR, "Error while performing the handshake");
-            return ;
-        }
-
         try
         {
             while (running_ && vocal_server_.running())
@@ -99,14 +100,12 @@ public class ClientConnection implements Runnable, EventEngine
                     // broadcast(event);
 
                 }
-                catch (java.io.EOFException e)
-                {
-                    Log.LOG(Log.Level.INFO, "CLientConnection [" + user_name_ + "] socket closed");
-                    break;
-                }
                 catch (Exception e)
                 {
-                    System.out.println("ClientConnection error reading input: " + e);
+                    Log.LOG(Log.Level.INFO, "CLientConnection [" + user_name_ + "] socket closed");
+                    // Sending to others that we disconnected due to a fatal error
+                    handleDisconnection(new DisconnectionEvent(uuid_, user_name_));
+                    break;
                 }
             }
 
@@ -268,7 +267,7 @@ public class ClientConnection implements Runnable, EventEngine
         }
         finally
         {
-            vocal_server_.remove_client(this);
+            vocal_server_.remove_client(uuid_);
             running_ = false;
         }
     }
@@ -338,6 +337,14 @@ public class ClientConnection implements Runnable, EventEngine
         else
         {
             event.state(HandshakeEvent.State.OK);
+        }
+
+        if (vocal_server_.is_present(uuid_, event.userName()))
+        {
+            // Setting Closing state and stoping handshake
+            event.state(HandshakeEvent.State.BYE);
+            res = send(event);
+            return false;
         }
 
         // Setting userName;
