@@ -88,6 +88,11 @@ public class PanelChat extends JPanel implements ThemeUI
 		return messages_;
 	}
 	
+	public void clearMessages()
+	{
+		messages_.clear();
+	}
+	
 	public void pushMessage(final String textMessage, final String pseudo, final boolean self)
 	{
 		// Break if the message is empty

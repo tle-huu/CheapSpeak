@@ -34,6 +34,7 @@ public class PanelMain extends JSplitPane implements ThemeUI
 	public void resetChat()
 	{
 		panelChat_.messagePanel().removeAll();
+		panelChat_.clearMessages();
 		panelChat_.sendTextArea().setText("");
 		panelChat_.repaint();
 	}
