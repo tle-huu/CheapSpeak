@@ -21,7 +21,7 @@ import utilities.events.Event;
 import utilities.infra.Log;
 
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -50,15 +50,12 @@ public class VocalServer
 		Log.LOG(Log.Level.INFO, "Server listening to port " + port);
 		listening_socket_ = new ServerSocket(port_);
 
-		// TODO Move into an init function
-        ServerRoom lobby = new ServerRoom("Lobby", this);
-        rooms_.put(lobby.name(), lobby);
 
-        add_room(new ServerRoom("La chambre d'Elie", this));
-        add_room(new ServerRoom("La chambre d'Oket", this));
-        add_room(new ServerRoom("La chambre de Crepel", this));
-        add_room(new ServerRoom("Le harem de Victor Robin", this));
-        add_room(new ServerRoom("Le Cabinet", this));
+		boolean success = init_rooms();
+		if (!success)
+		{
+			assert false : "Server cannot run without rooms initialization";
+		}
 
 	}
 
@@ -163,6 +160,7 @@ public class VocalServer
 		return true;
 	}
 
+	// TODO: Bad getter. Should disappear and be turned into a proper exposed API
     public Vector<ServerRoom> rooms_vector()
     {
         Vector<ServerRoom> rooms = new Vector<ServerRoom>(rooms_.size());
@@ -174,22 +172,26 @@ public class VocalServer
        return rooms;
     }
 
-    public Hashtable<String, ServerRoom> rooms()
+    public ConcurrentHashMap<String, ServerRoom> rooms()
     {
 		return rooms_;
     }
 
-	// TODO: Bad getter. Should disappear and be turned into a proper exposed API
-	public Hashtable<UUID, ClientConnection> clients()
+	public ConcurrentHashMap<UUID, ClientConnection> clients()
 	{
 		return clients_;
 	}
 
-	public boolean remove_client(ClientConnection client_conn)
+	public ClientConnection get_client(final UUID client_uuid)
 	{
-		ServerRoom client_room = rooms_.get(client_conn.currentRoom());
-		client_room.remove_client(client_conn.uuid());
-		clients_.remove(client_conn.uuid());
+		return clients_.get(client_uuid);
+	}
+
+	public boolean remove_client(UUID client_uuid)
+	{
+		ServerRoom client_room = rooms_.get(clients_.get(client_uuid).currentRoom());
+		client_room.remove_client(client_uuid);
+		clients_.remove(client_uuid);
 		return true;
 	}
 
@@ -204,7 +206,44 @@ public class VocalServer
 		return running_.get();
 	}
 
+
+	public boolean is_present(final UUID current_client_uuid, final String user_name)
+	{
+		for (ClientConnection client : clients_.values())
+		{
+			if (current_client_uuid != client.uuid() && client.user_name().equals(user_name))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 // PRIVATE
+
+	private boolean init_rooms()
+	{
+		try
+		{
+			// Lobby room is the default room for new comer
+	        ServerRoom lobby = new ServerRoom("Lobby", this);
+	        rooms_.put(lobby.name(), lobby);
+
+	        // TODO: REMOVE THIS FOR RENDING
+	        add_room(new ServerRoom("La chambre d'Elie", this));
+	        add_room(new ServerRoom("La chambre d'Oket", this));
+	        add_room(new ServerRoom("La chambre de Crepel", this));
+	        add_room(new ServerRoom("Le harem de Victor Robin", this));
+	        add_room(new ServerRoom("Le Cabinet", this));
+	        return true;
+		}
+		catch (Exception e)
+		{
+			Log.LOG(Log.Level.ERROR, "Error initialization of rooms in Vocal Server");
+			return false;
+		}
+
+	}
 
 	private boolean add_client(ClientConnection client_conn)
 	{
@@ -217,10 +256,10 @@ public class VocalServer
 // PRIVATE
 
 	// Hash map to store client connections objects
-	private Hashtable<UUID, ClientConnection> clients_ = new Hashtable<UUID, ClientConnection>();
+	private ConcurrentHashMap<UUID, ClientConnection> clients_ = new ConcurrentHashMap<UUID, ClientConnection>();
 
 	// Hash map to store client connections objects
-	private Hashtable<String, ServerRoom> rooms_ = new Hashtable<String, ServerRoom>();
+	private ConcurrentHashMap<String, ServerRoom> rooms_ = new ConcurrentHashMap<String, ServerRoom>();
 
 	// Shared ring buffer for broadcaster and client connections communication
 	private RingBuffer<Event> 			broadcast_queue_ = new RingBuffer<Event>();
