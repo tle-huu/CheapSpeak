@@ -33,6 +33,7 @@ public class TreeRoom extends JTree implements ThemeUI
 	
 	public void init(final List<Room> rooms)
 	{
+		// Create a node for each room and each client in the room
 		for (Room room: rooms)
 		{
 			DefaultMutableTreeNode roomNode = new DefaultMutableTreeNode(room);
@@ -50,6 +51,7 @@ public class TreeRoom extends JTree implements ThemeUI
 	
 	public void addRoom(final Room room)
 	{
+		// Add a room node to the root node
 		DefaultMutableTreeNode roomNode = new DefaultMutableTreeNode(room);
 		root_.add(roomNode);
 		model_.reload();
@@ -58,8 +60,8 @@ public class TreeRoom extends JTree implements ThemeUI
 	
 	public void removeRoom(final String room)
 	{
-		int roomCount = root_.getChildCount();
-		for (int i = 0; i < roomCount; ++i)
+		// Get the corresponding room node and delete it
+		for (int i = 0; i < root_.getChildCount(); ++i)
 		{
 			DefaultMutableTreeNode roomNode = (DefaultMutableTreeNode) root_.getChildAt(i);
 			if (roomNode.toString().equals(room))
@@ -74,8 +76,8 @@ public class TreeRoom extends JTree implements ThemeUI
 	
 	public void addClient(final String room, final String client)
 	{
-		int roomCount = root_.getChildCount();
-		for (int i = 0; i < roomCount; ++i)
+		// Find the corresponding room node and add a client node to it
+		for (int i = 0; i < root_.getChildCount(); ++i)
 		{
 			DefaultMutableTreeNode roomNode = (DefaultMutableTreeNode) root_.getChildAt(i);
 			if (roomNode.toString().equals(room))
@@ -90,14 +92,14 @@ public class TreeRoom extends JTree implements ThemeUI
 	
 	public void removeClient(final String room, final String client)
 	{
-		int roomCount = root_.getChildCount();
-		for (int i = 0; i < roomCount; ++i)
+		// Find the corresponding room node and the corresponding client node in its children
+		// and then delete it
+		for (int i = 0; i < root_.getChildCount(); ++i)
 		{
 			DefaultMutableTreeNode roomNode = (DefaultMutableTreeNode) root_.getChildAt(i);
 			if (roomNode.toString().equals(room))
 			{
-				int clientCount = roomNode.getChildCount();
-				for (int j = 0; j < clientCount; ++j)
+				for (int j = 0; j < roomNode.getChildCount(); ++j)
 				{
 					DefaultMutableTreeNode clientNode = (DefaultMutableTreeNode) roomNode.getChildAt(j);
 					if (clientNode.toString().equals(client))
@@ -125,6 +127,7 @@ public class TreeRoom extends JTree implements ThemeUI
 	
 	private void expand()
 	{
+		// Expand all room nodes
 		for (int i = 0; i < this.getRowCount(); ++i)
 		{
 		    this.expandRow(i);

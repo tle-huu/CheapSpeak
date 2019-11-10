@@ -282,7 +282,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		defaultRoom_.clear();
 		rooms_.add(defaultRoom_);
 		
-		// Stop listening
+		// Stop listening to the server
 		listening_.set(false);
 	}
 	
@@ -294,7 +294,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			disconnect();
 		}
 		
-		// End the app
+		// Close the app
 		Log.LOG(Log.Level.INFO, "Exit");
 		System.exit(0);
 	}
@@ -366,6 +366,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	{
 		while (true)
 		{
+			// Wait until the user is connected to the server
 			lock_.lock();
 			try
 			{
@@ -379,11 +380,16 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			{
 				lock_.unlock();
 			}
+			
+			// Start listening to the server
 			Log.LOG(Log.Level.INFO, "Start listening");
 			listening_.set(true);
 			while (listening_.get() && client_ != null)
 			{
+				// Get an event
 				Event event = client_.getEvent();
+				
+				// Handle the event
 				if (event != null)
 				{
 					boolean hasWorked = handleEvent(event);
@@ -393,6 +399,8 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 					}
 				}
 			}
+			
+			// Stop listening to the server
 			listening_.set(false);
 			Log.LOG(Log.Level.INFO, "Stop listening");
 		}
@@ -429,7 +437,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// Get host, port and pseudo
+			// Get the connect variables
 			String host = panelConnect_.host();
 			int port = panelConnect_.port();
 			String pseudo = panelConnect_.pseudo();
@@ -519,6 +527,12 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
+			// Break if the user is not in a room
+			if (currentRoom_ == null)
+			{
+				return ;
+			}
+			
 			// Get the chat panel
 			PanelChat panelChat = panelMain_.panelChat();
 			
@@ -526,22 +540,16 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			panelChat.sendTextArea().grabFocus();
 			
 			// Get the text field and reset it
-			String txt = panelChat.sendTextArea().getText().trim();
+			String textMessage = panelChat.sendTextArea().getText().trim();
 			panelChat.sendTextArea().setText("");
 			
-			// Break if the user is not a room
-			if (currentRoom_ == null)
-			{
-				return ;
-			}
-			
 			// Push the message on the panel
-			panelChat.pushMessage(txt, pseudo_, true);
+			panelChat.pushMessage(textMessage, pseudo_, true);
 			
 			// Send the message to the server
 			if (client_ != null)
 			{
-				Event event = new TextEvent(null, pseudo_, txt);
+				Event event = new TextEvent(null, pseudo_, textMessage);
 				client_.send_event(event);
 			}
 		}
@@ -613,6 +621,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
+			// Mute/unmute the microphone
 			isMuted_ = menuBar_.mute().isSelected();
 			if (isMuted_)
 			{
@@ -630,7 +639,10 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
+			// Get the selected theme
 			String theme = menuBar_.theme().getSelection().getActionCommand();
+			
+			// Update the current theme UI
 			switch (theme)
 			{
 				case "Light":
@@ -653,6 +665,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
+			// Switch to fullscreen mode
 			if (!menuBar_.fullscreen().isSelected())
 			{
 				setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -706,24 +719,34 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				boolean selected, boolean expanded, 
 				boolean isLeaf, int row, boolean focused)
 		{
+			// Get the tree cell renderer component
 			Component component = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
+			
+			// Set the cell icon and font depending on whether the node is a room or a client
 			int level = ((DefaultMutableTreeNode) value).getLevel();
 			if (level == 1)
 			{
+				// Room node
 				this.setIcon(UIManager.getIconResource("ROOM_ICON"));
 				this.setFont(UIManager.getFontResource("FONT_TREE_ROOM"));
 			}
 			else
 			{
+				// Client node
 				this.setIcon(UIManager.getIconResource("CLIENT_ICON"));
 				this.setFont(UIManager.getFontResource("FONT_TREE_CLIENT"));
+				
+				// Highlight the cell if it's the user's pseudo
 				String pseudo = (String) ((DefaultMutableTreeNode) value).getUserObject();
 				if (pseudo.equals(pseudo_))
 				{
 					this.setForeground(UIManager.getColorResource("TREE_PSEUDO_COLOR"));
 				}
 			}
+			
+			// Set the cell background
 			this.setBackgroundNonSelectionColor(UIManager.getColorResource("TREE_COLOR"));
+			
 			return component;
 		}
 	}

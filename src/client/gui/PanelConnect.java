@@ -125,6 +125,7 @@ public class PanelConnect extends JPanel implements ThemeUI
 	
 	public int port()
 	{
+		// Convert the string into an integer
 		int port;
 		try
 		{

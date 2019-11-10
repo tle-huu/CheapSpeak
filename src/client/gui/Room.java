@@ -48,6 +48,7 @@ public class Room
 // PRIVATE ATTRIBUTES
 
 	private String name_;
+	
 	private List<String> clients_ = new ArrayList<String>();
 	
 }

@@ -1,7 +1,6 @@
 package client.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -23,15 +22,15 @@ public class SplashScreen extends JWindow
 		super();
 		
 		// Set the window
-		this.setSize(220, 156);
+		this.setSize(WIDTH, HEIGHT);
 		this.setLocationRelativeTo(null);
 		
 		// Set the background
 		try
 		{
-			Image img = ImageIO.read(new File(IMAGE_FILE_NAME));
-			PanelBackground pbg = new PanelBackground(img);
-			this.setContentPane(pbg);
+			Image img = ImageIO.read(new File(UIManager.getStringResource("SPLASHSCREEN_FILE_NAME")));
+			PanelBackground panelBackground = new PanelBackground(img);
+			this.setContentPane(panelBackground);
 		}
 		catch (IOException e)
 		{
@@ -43,15 +42,15 @@ public class SplashScreen extends JWindow
 		bar_.setMinimum(0);
 		bar_.setMaximum(LAUNCH_TIME * 100);
 		bar_.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-		bar_.setForeground(Color.CYAN);
+		bar_.setForeground(UIManager.getColorResource("LOADING_BAR_COLOR"));
 		this.getContentPane().add(bar_, BorderLayout.SOUTH);
 		
 		// Create the main frame
 		windowMain_ = new WindowMain();
 	    
 		// Start the loading
-	    Thread t = new Thread(new Loading());
-	    t.start();      
+	    Thread loadingThread = new Thread(new Loading());
+	    loadingThread.start();      
 	    
 	    // Display the splash screen
 		this.setVisible(true);
@@ -77,8 +76,10 @@ public class SplashScreen extends JWindow
 					e.printStackTrace();
 				}
 			}
+			
 			// Close the splash screen
 			setVisible(false);
+			
 			// Display the main frame
 			windowMain_.start();
 		}
@@ -89,8 +90,8 @@ public class SplashScreen extends JWindow
 	private final WindowMain   windowMain_;
 	private final JProgressBar bar_;
 	
-	private final String IMAGE_FILE_NAME = "splash_screen.png";
-	
+	private final int WIDTH = 220;
+	private final int HEIGHT = 156;
 	private final int LAUNCH_TIME = 1; // in seconds
 	
 }
