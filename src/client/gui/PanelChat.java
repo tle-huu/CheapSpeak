@@ -32,9 +32,9 @@ public class PanelChat extends JPanel implements ThemeUI
 		// Set the message panel
 		messagePanel_ = new JPanel();
 		messagePanel_.setLayout(new BoxLayout(messagePanel_, BoxLayout.Y_AXIS));
-		JScrollPane jsp = new JScrollPane(messagePanel_);
-		jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		this.add(jsp, BorderLayout.CENTER);
+		JScrollPane jspMessagePanel = new JScrollPane(messagePanel_);
+		jspMessagePanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		this.add(jspMessagePanel, BorderLayout.CENTER);
 		
 		// Set the send panel
 		JPanel south = new JPanel();
@@ -47,9 +47,9 @@ public class PanelChat extends JPanel implements ThemeUI
 		sendTextArea_.setFont(UIManager.getFontResource("FONT_MESSAGE"));
 		sendTextArea_.setLineWrap(true);
 		sendTextArea_.setWrapStyleWord(true);
-		JScrollPane jspText = new JScrollPane(sendTextArea_);
-		jspText.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		south.add(jspText, BorderLayout.CENTER);
+		JScrollPane jspTextArea = new JScrollPane(sendTextArea_);
+		jspTextArea.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		south.add(jspTextArea, BorderLayout.CENTER);
 		
 		// Set the send button
 		JPanel buttonPanel = new JPanel();

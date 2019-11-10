@@ -70,6 +70,24 @@ public class UIManager
 		return null;
 	}
 	
+	// Get a string resource
+	public static String getStringResource(String resourceName)
+	{
+		try
+		{
+			return (String) getResource(resourceName).get(null);
+		}
+		catch (IllegalArgumentException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IllegalAccessException e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	// Get a font resource
 	public static Font getFontResource(String resourceName)
 	{

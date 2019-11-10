@@ -13,8 +13,12 @@ public class PanelMain extends JSplitPane implements ThemeUI
 	public PanelMain()
 	{
 		super();
+		
+		// Create the two components
 		treeRoom_ = new TreeRoom();
 		panelChat_ = new PanelChat();
+		
+		// Set the divider
 		this.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
 		this.setDividerLocation(DIVIDER_LOCATION);
 		this.setLeftComponent(new JScrollPane(treeRoom_));

@@ -49,8 +49,8 @@ public class PanelMessage extends JPanel implements ThemeUI
 		
 		// Set the timestamp label
 		Date date = new Date();
-		Timestamp ts = new Timestamp(date.getTime());
-		String time = SDF.format(ts);
+		Timestamp timestamp = new Timestamp(date.getTime());
+		String time = SDF.format(timestamp);
 		timestampLabel_ = new JLabel();
 		timestampLabel_.setBorder(BORDER_LABEL);
 		timestampLabel_.setFont(UIManager.getFontResource("FONT_MESSAGE"));
@@ -92,6 +92,7 @@ public class PanelMessage extends JPanel implements ThemeUI
 	{
 		if (self_)
 		{
+			// User message
 			this.setBackground(UIManager.getColorResource("USER_MESSAGE_COLOR"));
 			this.setBorder(BorderFactory.createMatteBorder(
 					DEFAULT_MARGIN_MESSAGE, 
@@ -102,6 +103,7 @@ public class PanelMessage extends JPanel implements ThemeUI
 		}
 		else
 		{
+			// Other message
 			this.setBackground(UIManager.getColorResource("OTHER_MESSAGE_COLOR"));
 			this.setBorder(BorderFactory.createMatteBorder(
 					DEFAULT_MARGIN_MESSAGE, 
@@ -123,10 +125,9 @@ public class PanelMessage extends JPanel implements ThemeUI
 	private int     width_;
 	private boolean self_;
 	
-	private final int    DEFAULT_MARGIN_MESSAGE = 10;
-	private final float  PADDING_PERCENT_MESSAGE = 0.25f;
-	private final Border BORDER_LABEL = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-	
+	private final int              DEFAULT_MARGIN_MESSAGE = 10;
+	private final float            PADDING_PERCENT_MESSAGE = 0.25f;
+	private final Border           BORDER_LABEL = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 	private final SimpleDateFormat SDF = new SimpleDateFormat("HH:mm");
 
 }
