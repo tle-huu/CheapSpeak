@@ -8,6 +8,18 @@ package utilities.events;
 public class HandshakeEvent extends Event
 {
 	
+// PUBLIC ENUM
+
+	public enum State
+	{
+		WAITING,
+		NAMESET,
+		OTHERNAME,
+		OK,
+		LISTENING,
+		BYE;
+	};
+	
 // PUBLIC METHODS
 
 	// Constructor
@@ -45,16 +57,6 @@ public class HandshakeEvent extends Event
 	{
 		return magicWord_;
 	}
-
-	public enum State
-	{
-		WAITING,
-		NAMESET,
-		OTHERNAME,
-		OK,
-		LISTENING,
-		BYE;
-	};
 
 // PRIVATE ATTRIBUTES
 	

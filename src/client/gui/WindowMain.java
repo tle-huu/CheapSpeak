@@ -362,6 +362,15 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		}
 	}
 	
+	private void showChangePseudoDialog(final String textDialog)
+	{
+		// Display a message to inform the user he cannot connect with this pseudo
+		JOptionPane.showMessageDialog(null, 
+				textDialog + "\nPlease try with another pseudo :)", 
+				"You cannot connect with this pseudo", 
+				JOptionPane.WARNING_MESSAGE);
+	}
+	
 	private void eventListener()
 	{
 		while (true)
@@ -443,9 +452,16 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			String pseudo = panelConnect_.pseudo();
 			
 			// Check if the pseudo is correct
-			if (pseudo.isEmpty() || pseudo.length() > PSEUDO_MAX_LENGTH)
+			if (pseudo.isEmpty())
 			{
-				Log.LOG(Log.Level.WARNING, "The pseudo " + pseudo + " is not supported");
+				Log.LOG(Log.Level.WARNING, "The pseudo is empty");
+				showChangePseudoDialog("Your pseudo cannot be empty.");
+				return ;
+			}
+			else if (pseudo.length() > PSEUDO_MAX_LENGTH)
+			{
+				Log.LOG(Log.Level.WARNING, "The pseudo " + pseudo + " is too long");
+				showChangePseudoDialog("Your pseudo must have less than " + PSEUDO_MAX_LENGTH + " characters.");
 				return ;
 			}
 			
@@ -457,12 +473,33 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			}
 			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
 			
-			// Create a client and connect to the server
+			// Try to connect to the server
 			boolean isConnected = NO_CONNECTION_MODE;
 			try
 			{
+				// Create a client
 				client_ = new Client(host, port);
-				isConnected = client_.connect(pseudo);
+				
+				// Connect to the server
+				Client.ConnectState state = client_.connect(pseudo);
+				switch (state)
+				{
+					case BYE:
+						isConnected = false;
+						break;
+						
+					case CHANGE_PSEUDO:
+						isConnected = false;
+						showChangePseudoDialog("The pseudo " + pseudo + " is alreay taken by another user.");
+						break;
+						
+					case OK:
+						isConnected = true;
+						break;
+						
+					default:
+						break;
+				}
 			}
 			catch (UnknownHostException e1)
 	        {
@@ -472,6 +509,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	        {
 	        	e1.printStackTrace();
 	        }
+			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
 			
 			// Set the main panel
 			if (isConnected)
@@ -730,7 +768,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				this.setIcon(UIManager.getIconResource("ROOM_ICON"));
 				this.setFont(UIManager.getFontResource("FONT_TREE_ROOM"));
 			}
-			else
+			else if (level == 2)
 			{
 				// Client node
 				this.setIcon(UIManager.getIconResource("CLIENT_ICON"));

@@ -342,7 +342,7 @@ public class ClientConnection implements Runnable, EventEngine
         if (vocal_server_.is_present(uuid_, event.userName()))
         {
             // Setting Closing state and stoping handshake
-            event.state(HandshakeEvent.State.BYE);
+            event.state(HandshakeEvent.State.OTHERNAME);
             res = send(event);
             return false;
         }

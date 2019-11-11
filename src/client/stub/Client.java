@@ -38,7 +38,20 @@ import utilities.infra.Log;
  */
 public class Client
 {
-    public Client(String host, int port) throws UnknownHostException, IOException
+    
+// PUBLIC ENUM
+
+	public enum ConnectState
+	{
+		OK,
+		CHANGE_PSEUDO,
+		BYE;
+	};
+	
+// PUBLIC METHODS
+	
+	// Constructor
+	public Client(String host, int port) throws UnknownHostException, IOException
     {
         host_ = host;
         port_ = port;
@@ -64,18 +77,9 @@ public class Client
     }
 
     // WIP
-    public boolean connect(final String user_name)
+    public ConnectState connect(final String user_name)
     {
-        // For testing only
-        boolean res = handshake(user_name);
-        return res;
-
-        // if (res == false)
-        // {
-        //     Log.LOG();
-        // }
-
-        // return handshake(user_name);
+       return handshake(user_name);
     }
 
     public void disconnect()
@@ -240,7 +244,7 @@ public class Client
         }
     }
 */
-// PRIVATE
+// PRIVATE METHODS
 
     private void start_listening()
     {
@@ -347,7 +351,7 @@ public class Client
     }
 
     // [WIP]
-    private boolean handshake(final String name)
+    private ConnectState handshake(final String name)
     {
         HandshakeEvent event = null;
 
@@ -361,14 +365,17 @@ public class Client
         if (try_counter == 5)
         {
             Log.LOG(Log.Level.ERROR, "Handshake failed: could not get first HandshakeEvent");
-            return false;
+            return ConnectState.BYE;
         }
         
+        // Get event state
+        HandshakeEvent.State state = event.state();
+        
         // Waiting for an waiting state from server
-        if (event.state() != HandshakeEvent.State.WAITING)
+        if (state != HandshakeEvent.State.WAITING)
         {
-            Log.LOG(Log.Level.ERROR, "Handshake event received is in unexpected state {" + event.state().name());
-            return false;
+            Log.LOG(Log.Level.ERROR, "Handshake event received is in an unexpected state: " + event.state().name());
+            return ConnectState.BYE;
         }
 
         // Setting the name and the state to set and sending the event to the server
@@ -386,18 +393,35 @@ public class Client
             event = (HandshakeEvent) read();
             ++try_counter;
         }
-
+        
+        if (try_counter == 5)
+        {
+            Log.LOG(Log.Level.ERROR, "Handshake failed: could not get second HandshakeEvent");
+            return ConnectState.BYE;
+        }
+        
+        // Get state
+        state = event.state();
+        
+        // Check if the pseudo is available
+        if (state == HandshakeEvent.State.OTHERNAME)
+        {
+            Log.LOG(Log.Level.ERROR, "Handshake failed: the pseudo is already taken");
+            return ConnectState.CHANGE_PSEUDO;
+        }
+        
         // Waiting for the response. If OK, we good to go, otherwise, handhshake failed
-        if (try_counter == 5 || event.state() != HandshakeEvent.State.OK)
+        if (state != HandshakeEvent.State.OK)
         {
             Log.LOG(Log.Level.ERROR, "Handshake failed");
-            return false;
+            return ConnectState.BYE;
         }
 
+        // Check the magic word
         if (event.magicWord() != magic_word)
         {
             Log.LOG(Log.Level.ERROR, "Handshake failed: magic word has been changed");
-            return false;
+            return ConnectState.BYE;
         }
 
         if (try_counter != 2)
@@ -412,7 +436,7 @@ public class Client
         event.state(HandshakeEvent.State.LISTENING);
         send_event(event);
 
-        return true;
+        return ConnectState.OK;
     }
 
     private boolean close()
@@ -434,9 +458,9 @@ public class Client
         return true;
     }
 
-// PRIVATE
+// PRIVATE ATTRIBUTES
 
-    private RingBuffer<Event>           event_queue_ = new RingBuffer<Event>();
+    private RingBuffer<Event> event_queue_ = new RingBuffer<Event>();
 
     private HashMap<UUID, AudioChannel> audio_channels_ = new HashMap<UUID, AudioChannel>();
 
