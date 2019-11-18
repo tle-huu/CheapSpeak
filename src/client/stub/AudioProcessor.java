@@ -18,32 +18,46 @@ public class AudioProcessor{
 	
 	
 	//CONSTRUCTOR
-	public AudioProcessor(Client client)
+	public AudioProcessor(Client client, final boolean muted)
 	{
 		Client client_ = client;
+
+        muted_ = new AtomicBoolean(muted);
 		
 	}
 	
+
+    public void shutdown()
+    {
+        running_.compareAndSet(false, true);
+    }
+
+
+
 	//MICROPHONE 
 	// runnable or not ? 
 	public void mute()
 	{		
     //close the microphone when client exit the room 
 	// we need to flush the data before entering a new room
-	microphone_.stop();
-    Log.LOG(Log.Level.INFO, "Muting microphone");
-	
-	
-	// modify the atomic boolean muted to true 
-	muted_.compareAndSet(false, true);
-	
+
+
+        Log.LOG(Log.Level.INFO, "Muting microphone");
+    	
+    	// modify the atomic boolean muted to true 
+    	muted_.compareAndSet(false, true);
+    	
 	//
 	}
 	
 	public void unmute() 
 	{
-		
+        lock_.lock();
+        cond_.signal();
+        lock_.unlock();
+
 		muted_.compareAndSet(true, false);
+
 		Log.LOG(Log.Level.INFO, "Unmuting microphone");
 
 	}
@@ -54,13 +68,47 @@ public class AudioProcessor{
 	{		// using runnable 
 		try 
 		{
+
 			Thread thread = new Thread(new Runnable())
 					{
 					@Override
-						
+                    public void run()
+                    {
+
+                        while (running_.get())
+                        {
+
+                            while (muted_.get() == false)
+                            {
+
+                              /*   record micro + envoie server   */ 
+
+                            }
+
+                            lock_.lock();
+                            try
+                            {
+                                cond_.await();
+                            }
+                            catch (InterruptedException e)
+                            {
+                                e.printStackTrace();
+                            }
+                            finally
+                            {
+                                lock_.unlock();
+                            }
+
+                        }
+
+                    }
 				
-					}
+				};
 			
+
+            running_ = true;
+            thread.start();
+
 		}
 	}
 	
@@ -80,16 +128,35 @@ public class AudioProcessor{
 	
 	public void play_sound_packet(VoiceEvent event)
 	{
-		
+        // Find the channel associated to the datagramn client uuid
+        AudioChannel channel = audio_channels_.get(event.uuid());
+
+        // If none exists, create one
+        // TODO: Add a thread pool to the client
+        if (channel == null)
+        {
+            channel = new AudioChannel(event.uuid());
+            audio_channels_.put(event.uuid(), channel);
+            channel.start();
+        }
+
+        channel.push(event);
 	}
     
     // PRIVATE
-    private AtomicBoolean running_ = new AtomicBoolean(true);
+    private AtomicBoolean running_ = new AtomicBoolean(false);
+
+	private AtomicBoolean muted_;
+
     private Microphone microphone_ = new Microphone();
-	private AtomicBoolean muted_ = new AtomicBoolean(false);
     private static ReentrantLock lock  =  new ReentrantLock();
+
     private Hashtable<UUID, AudioChannel> audio_channels_ = new Hashtable<UUID, AudioChannel>();
 	
+    private final Lock      lock_ = new ReentrantLock();
+    private final Condition cond_ = lock_.newCondition();
+
+
 	//PUBLIC 
 }
 
