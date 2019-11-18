@@ -28,6 +28,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 import client.stub.Client;
+import client.stub.AudioProcessor;
 import utilities.events.ConnectionEvent;
 import utilities.events.DisconnectionEvent;
 import utilities.events.Event;
@@ -98,7 +99,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			currentRoom_ = DEFAULT_ROOM_NAME;
 			
 			// Start the audio processor
-			//AUDIOPROCESSORaudioProcessor_.startMicrophoneThread();
+			audioProcessor_.startMicrophoneThread();
 		}
 		
 		return true;
@@ -159,7 +160,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		Log.LOG(Log.Level.INFO, "Voice event received");
 		
 		// Send the sound packet to the audio processor
-		//AUDIOPROCESSORaudioProcessor_.playSoundPacket(event);
+		audioProcessor_.playSoundPacket(event);
 		
 		return true;
 	}
@@ -205,7 +206,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			panelMain_.resetChat();
 			
 			// Unmute the audio processor
-			//AUDIOPROCESSORaudioProcessor_.unmute();
+			audioProcessor_.unmute();
 		}
 		
 		return true;
@@ -527,7 +528,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				revalidate();
 				
 				// Create the audio processor
-				//AUDIOPROCESSORaudioProcessor_ = new AudioProcessor(client);
+				audioProcessor_ = new AudioProcessor(client_, pseudo_, isMuted_);
 				
 				// Reset the connect/disconnect buttons
 				menuBar_.connect().setEnabled(false);
@@ -621,7 +622,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		        			panelMain_.resetChat();
 		        			
 		        			// Mute the audio processor
-		        			//AUDIOPROCESSORaudioProcessor_.mute();
+		        			audioProcessor_.mute();
 		        			
 		        			// Send the enter room event to the server
 		        			if (client_ != null)
@@ -663,11 +664,11 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			isMuted_ = menuBar_.mute().isSelected();
 			if (isMuted_)
 			{
-				//AUDIOPROCESSORaudioProcessor_.mute();
+				audioProcessor_.mute();
 			}
 			else
 			{
-				//AUDIOPROCESSORaudioProcessor_.unmute();
+				audioProcessor_.unmute();
 			}
 		}
 	}
@@ -796,7 +797,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	private final Lock      lock_ = new ReentrantLock();
 	private final Condition cond_ = lock_.newCondition();
 	private AtomicBoolean   listening_ = new AtomicBoolean(false);
-	//AUDIOPROCESSORprivate AudioProcessor  audioProcessor_;
+	private AudioProcessor  audioProcessor_;
 	
 	// Window
 	private MenuBar      menuBar_;

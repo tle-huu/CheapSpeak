@@ -4,25 +4,31 @@ import java.io.IOException;
 import utilities.infra.Log;
 
 import java.util.HashMap;
+import client.stub.Client;
 
 import java.util.Hashtable;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import utilities.SoundPacket;
+import utilities.events.Event;
 import utilities.events.VoiceEvent;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class AudioProcessor{
 	
 	
 	//CONSTRUCTOR
-	public AudioProcessor(Client client, final boolean muted)
+	public AudioProcessor(Client client, final String userName, final boolean muted)
 	{
-		Client client_ = client;
+		client_ = client;
 
         muted_ = new AtomicBoolean(muted);
+        userName_ = userName;
 		
 	}
 	
@@ -64,16 +70,19 @@ public class AudioProcessor{
 	
 	
 	// in client ?
-	public void start_microhone_thread()  throws Exception  
+	public void startMicrophoneThread() 
 	{		// using runnable 
 		try 
 		{
 
-			Thread thread = new Thread(new Runnable())
+			Thread thread = new Thread(new Runnable()
 					{
 					@Override
                     public void run()
                     {
+                            boolean res = microphone_.open();
+                            microphone_.start();
+                            int numBytesRead;
 
                         while (running_.get())
                         {
@@ -81,7 +90,28 @@ public class AudioProcessor{
                             while (muted_.get() == false)
                             {
 
-                              /*   record micro + envoie server   */ 
+                                // Reading audio data from the microphone and writing it to data[]
+                                byte[] data = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
+                                numBytesRead = microphone_.read(data, 0, data.length);
+
+                                // Calculating absolute value mean to decide whether or not send the packet
+                                int sum = 0;
+                                for (int x : data)
+                                {
+                                    sum += Math.abs(x);
+                                }
+                                System.out.println("[DEBUG] Sum microphone : [" + Integer.toString(sum) + "]");
+
+                                SoundPacket sound_packet = null;
+
+                                // Sending a null packet if the average sample is too low
+                                // if ((sum / data.length) >= 1)
+                                // {
+                                //     sound_packet = new SoundPacket(data);
+                                // }
+
+                                VoiceEvent voice_event = new VoiceEvent(null, userName_, sound_packet);
+                                client_.send_event(voice_event);
 
                             }
 
@@ -103,13 +133,17 @@ public class AudioProcessor{
 
                     }
 				
-				};
-			
+				}
+			);
 
-            running_ = true;
+            running_.set(true);
             thread.start();
 
 		}
+            catch (Exception e)
+            {
+                Log.LOG(Log.Level.ERROR, "Error recording thread: " + e);
+            }
 	}
 	
 		
@@ -126,7 +160,7 @@ public class AudioProcessor{
 	}
 	*/
 	
-	public void play_sound_packet(VoiceEvent event)
+	public void playSoundPacket(VoiceEvent event)
 	{
         // Find the channel associated to the datagramn client uuid
         AudioChannel channel = audio_channels_.get(event.uuid());
@@ -144,6 +178,9 @@ public class AudioProcessor{
 	}
     
     // PRIVATE
+    private final String userName_;
+    private final Client client_;
+
     private AtomicBoolean running_ = new AtomicBoolean(false);
 
 	private AtomicBoolean muted_;
