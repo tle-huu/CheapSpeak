@@ -105,10 +105,11 @@ public class AudioProcessor{
                                 SoundPacket sound_packet = null;
 
                                 // Sending a null packet if the average sample is too low
-                                if ((sum / data.length) >= 1)
-                                {
-                                    sound_packet = new SoundPacket(data);
-                                }
+                                // if ((sum / data.length) >= 1)
+                                // {
+                                //     sound_packet = new SoundPacket(data);
+                                // }
+                                sound_packet = new SoundPacket(data);
 
                                 VoiceEvent voice_event = new VoiceEvent(null, userName_, sound_packet);
                                 client_.send_event(voice_event);

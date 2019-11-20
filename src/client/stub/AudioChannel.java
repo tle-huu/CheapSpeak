@@ -71,13 +71,13 @@ public class AudioChannel extends Thread
                         {
                             noise[i] = (byte) ((Math.random() * 3) - 1);
                         }
-                        speaker_.write(noise, 0, noise.length);
+                        // speaker_.write(noise, 0, noise.length);
                     }
                     else
                     {
                         Log.LOG(Log.Level.INFO, "xxxxxx salut");
-                        speaker_.write(sound_packet.data(), 0, sound_packet.data().length);
                     }
+                    speaker_.write(sound_packet.data(), 0, sound_packet.data().length);
                 }
                 catch (Exception e)
                 {
