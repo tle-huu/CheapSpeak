@@ -63,6 +63,8 @@ public class AudioChannel extends Thread
                     // Playing random noise if the packet does not contain any data
                     if (sound_packet == null)
                     {
+                        Log.LOG(Log.Level.INFO, "xxxxxx bonjour");
+
                         byte[] noise = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
 
                         for (int i = 0; i < noise.length; i++)
@@ -73,6 +75,7 @@ public class AudioChannel extends Thread
                     }
                     else
                     {
+                        Log.LOG(Log.Level.INFO, "xxxxxx salut");
                         speaker_.write(sound_packet.data(), 0, sound_packet.data().length);
                     }
                 }
