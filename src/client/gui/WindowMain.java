@@ -818,7 +818,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	private final String  DEFAULT_ROOM_NAME = "Lobby";
 	private final boolean NO_CONNECTION_MODE = true;
 	private final int     PSEUDO_MAX_LENGTH = 32;
-	private final int     MIN_PORT = 0;
+	private final int     MIN_PORT = 1025;
 	private final int     MAX_PORT = 65535;
 	
 }

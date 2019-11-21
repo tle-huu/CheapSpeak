@@ -43,7 +43,7 @@ public class VocalServer
 	final int THREADS_NUMBER = 10;
 
 // PUBLIC
-	public VocalServer(int port) throws Exception
+	public VocalServer(int port) throws IOException
 	{
 		port_ = port;
 
