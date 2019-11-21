@@ -22,12 +22,12 @@ public abstract class UIResources
 // PUBLIC ATTRIBUTES
 	
 	// File name
-	public static final String SPLASHSCREEN_FILE_NAME = "splash_screen.png";
+	public static final String SPLASHSCREEN_FILE_NAME = "assets/splash_screen.png";
 	
 	// Icons
-	public static final Icon ROOM_ICON = new ImageIcon("room_icon.png"),
-							 CLIENT_ICON = new ImageIcon("client_icon.png"),
-							 SPEAKER_ICON = new ImageIcon("speaker_icon.png");
+	public static final Icon ROOM_ICON = new ImageIcon("assets/room_icon.png"),
+							 CLIENT_ICON = new ImageIcon("assets/client_icon.png"),
+							 SPEAKER_ICON = new ImageIcon("assets/speaker_icon.png");
 	
 	// Fonts
 	private static final String FONT_NAME = "Arial";
