@@ -226,12 +226,13 @@ public class VocalServer
 	        ServerRoom lobby = new ServerRoom("Lobby", this);
 	        rooms_.put(lobby.name(), lobby);
 
-	        // TODO: REMOVE THIS FOR RENDING
-	        add_room(new ServerRoom("La chambre d'Elie", this));
-	        add_room(new ServerRoom("La chambre d'Oket", this));
-	        add_room(new ServerRoom("La chambre de Crepel", this));
-	        add_room(new ServerRoom("Le harem de Victor Robin", this));
-	        add_room(new ServerRoom("Le Cabinet", this));
+            add_room(new ServerRoom("General", this));
+            add_room(new ServerRoom("Students", this));
+            add_room(new ServerRoom("Random", this));
+            add_room(new ServerRoom("ADR", this));
+            add_room(new ServerRoom("Forum CentraleSupelec", this));
+            add_room(new ServerRoom("VIA", this));
+
 	        return true;
 		}
 		catch (Exception e)

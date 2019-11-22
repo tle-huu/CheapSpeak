@@ -200,7 +200,6 @@ public class ClientConnection implements Runnable, EventEngine
     @Override
     public boolean handleVoice(VoiceEvent event)
     {
-        Log.LOG(Log.Level.INFO, "handleVoice");
         broadcast(event);
         return true;
     }
@@ -208,8 +207,6 @@ public class ClientConnection implements Runnable, EventEngine
     @Override
     public boolean handleText(TextEvent event)
     {
-        Log.LOG(Log.Level.INFO, "handleText from " + event.userName() + ": " + event.textPacket());
-
         ServerRoom current_room = vocal_server_.rooms().get(currentRoom_);
 
         current_room.add_to_history(event);

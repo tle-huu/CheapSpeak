@@ -68,7 +68,7 @@ public class AudioProcessor
                     
                     while (running_.get())
                     {
-                        while (!isMuted_.get())
+                        while (running_.get() && !isMuted_.get())
                         {
                             // Reading audio data from the microphone and writing it to data[]
                             byte[] data = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
