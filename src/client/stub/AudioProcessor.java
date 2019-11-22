@@ -32,16 +32,12 @@ public class AudioProcessor
         running_.set(false);
     }
 
-	//MICROPHONE 
-	// runnable or not ? 
 	public void mute()
-	{		
-		// Close the microphone when client exit the room 
-		// We need to flush the data before entering a new room
-        Log.LOG(Log.Level.INFO, "Muting microphone");
-    	
-    	// modify the atomic boolean isMuted to true 
+	{
+    	// Modify the atomic boolean isMuted to true 
     	isMuted_.set(true);
+    	
+    	Log.LOG(Log.Level.INFO, "Muting microphone");
 	}
 	
 	public void unmute() 
@@ -62,9 +58,12 @@ public class AudioProcessor
 				@Override
                 public void run()
                 {
-                    boolean res = microphone_.open();
+                    boolean isMicrophoneOpen = microphone_.open();
+                    if (!isMicrophoneOpen)
+                    {
+                    	return;
+                    }
                     microphone_.start();
-                    int numBytesRead;
                     
                     while (running_.get())
                     {
@@ -72,11 +71,11 @@ public class AudioProcessor
                         {
                             // Reading audio data from the microphone and writing it to data[]
                             byte[] data = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
-                            numBytesRead = microphone_.read(data, 0, data.length);
+                            microphone_.read(data, 0, data.length);
 
                             // Calculating absolute value mean to decide whether or not send the packet
                             int sum = 0;
-                            for (int x : data)
+                            for (int x: data)
                             {
                                 sum += Math.abs(x);
                             }
@@ -89,6 +88,7 @@ public class AudioProcessor
                             {
                             	soundPacket = new SoundPacket(data);
                             	isTalking_.put(userName_, SPEAKER_ICON_MIN_TIME);
+                            	tree_.repaint(50L);
                             }
 
                             VoiceEvent voiceEvent = new VoiceEvent(null, userName_, soundPacket);
@@ -121,7 +121,7 @@ public class AudioProcessor
 						isTalking_.forEachKey(Long.MAX_VALUE, key ->
 							{
 								int value = Math.max(-1, isTalking_.getOrDefault(key, 0) - 1);
-								if (value == 0 || value == SPEAKER_ICON_MIN_TIME)
+								if (value == 0)
 								{
 									tree_.repaint(50L);
 								}
@@ -144,26 +144,12 @@ public class AudioProcessor
 		thread.start();
 	}
 	
-	// useful ?
-	public void reset()
-	{
-		
-	} 
-	
-	/*
-	public AudioChannel createAudioChannel()
-	{
-		return new AudioChannel() 
-	}
-	*/
-	
 	public void playSoundPacket(final VoiceEvent event)
 	{
         // Find the channel associated to the datagramn client uuid
         AudioChannel channel = audioChannels_.get(event.uuid());
 
         // If none exists, create one
-        // TODO: Add a thread pool to the client
         if (channel == null)
         {
             channel = new AudioChannel(event.uuid());
@@ -176,6 +162,7 @@ public class AudioProcessor
         if (event.soundPacket() != null)
         {
         	isTalking_.put(event.userName(), SPEAKER_ICON_MIN_TIME);
+        	tree_.repaint(50L);
         }
 	}
 	

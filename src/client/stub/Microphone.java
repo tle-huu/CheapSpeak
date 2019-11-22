@@ -8,7 +8,6 @@ import javax.sound.sampled.TargetDataLine;
 
 import utilities.infra.Log;
 
-
 /*
  *	Wrapper
  *
@@ -17,6 +16,7 @@ public class Microphone
 {
 
 // PRIVATE CONST
+	
 	static private final float 	SAMPLE_RATE = 8000.0f;
 	static private final int 	SAMPLE_SIZE = 8;
 
@@ -44,7 +44,6 @@ public class Microphone
 		}
 		catch (LineUnavailableException err)
 		{
-
 	    	Log.LOG(Log.Level.ERROR, "Error opening microphone line: " + err.getMessage());
 			return false;
 		}
