@@ -5,7 +5,7 @@ import java.io.IOException;
 import server.VocalServer;
 import utilities.infra.Log;
 
-public class Main
+public class ServerMain
 {
 	public static void main(String[] argv)
 	{

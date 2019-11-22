@@ -50,13 +50,11 @@ public class VocalServer
 		Log.LOG(Log.Level.INFO, "Server listening to port " + port);
 		listening_socket_ = new ServerSocket(port_);
 
-
 		boolean success = init_rooms();
 		if (!success)
 		{
 			assert false : "Server cannot run without rooms initialization";
 		}
-
 	}
 
 	// Starts the broadcasting thread and the main listening loop
@@ -206,7 +204,6 @@ public class VocalServer
 		return running_.get();
 	}
 
-
 	public boolean is_present(final UUID current_client_uuid, final String user_name)
 	{
 		for (ClientConnection client : clients_.values())
@@ -242,7 +239,6 @@ public class VocalServer
 			Log.LOG(Log.Level.ERROR, "Error initialization of rooms in Vocal Server");
 			return false;
 		}
-
 	}
 
 	private boolean add_client(ClientConnection client_conn)
@@ -251,7 +247,6 @@ public class VocalServer
 		clients_.put(client_conn.uuid(), client_conn);
 		return true;
 	}
-
 
 // PRIVATE
 

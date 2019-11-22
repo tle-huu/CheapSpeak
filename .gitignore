@@ -2,6 +2,10 @@
 *.class
 bin
 
+# Gradle files
+.gradle
+build
+
 # Log file
 *.log
 

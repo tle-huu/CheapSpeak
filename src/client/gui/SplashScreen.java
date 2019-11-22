@@ -69,7 +69,7 @@ public class SplashScreen extends JWindow
 				bar_.setValue(val);
 				try
 				{
-					Thread.sleep(10);
+					Thread.sleep(10L);
 				}
 				catch (InterruptedException e)
 				{

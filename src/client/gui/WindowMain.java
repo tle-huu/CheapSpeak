@@ -110,11 +110,11 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	{
 		Log.LOG(Log.Level.INFO, "Disconnection event received");
 		
-		// Get the room and the username
-		String pseudo = event.userName();
-		
 		// Remove the client
-		removeClient(pseudo);
+		removeClient(event.userName());
+		
+		// Remove the client from the audioProcessor
+		audioProcessor_.remove(event.userName(), event.uuid());
 		
 		return true;
 	}
@@ -378,18 +378,8 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		{
 			// Wait until the user is connected to the server
 			lock_.lock();
-			try
-			{
-				cond_.await();
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-			finally
-			{
-				lock_.unlock();
-			}
+			cond_.awaitUninterruptibly();
+			lock_.unlock();
 			
 			// Start listening to the server
 			Log.LOG(Log.Level.INFO, "Start listening");
@@ -469,7 +459,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			// Check if the port is correct
 			if (port < MIN_PORT || port > MAX_PORT)
 			{
-				Log.LOG(Log.Level.WARNING, "The port " + port + " is not supported");
+				Log.LOG(Log.Level.ERROR, "The port " + port + " is not supported");
 				return ;
 			}
 			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
@@ -504,11 +494,11 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			}
 			catch (UnknownHostException e1)
 	        {
-	            Log.LOG(Log.Level.WARNING, "The host " + host + " is unknown");
+	            Log.LOG(Log.Level.ERROR, "The host " + host + " is unknown");
 	        }
 	        catch (IOException e1)
 	        {
-	        	e1.printStackTrace();
+	        	Log.LOG(Log.Level.ERROR, "The client cannot be created");
 	        }
 			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
 			
@@ -529,6 +519,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				
 				// Create the audio processor
 				audioProcessor_ = new AudioProcessor(client_, pseudo_, isMuted_);
+				audioProcessor_.setTree(panelMain_.tree());
 				
 				// Reset the connect/disconnect buttons
 				menuBar_.connect().setEnabled(false);
@@ -554,6 +545,10 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			panelMain_ = null;
 			setContentPane(panelConnect_);
 			revalidate();
+			
+			// Stop the audio processor
+			audioProcessor_.shutdown();
+			audioProcessor_ = null;
 			
 			// Reset the connect/disconnect buttons
 			menuBar_.connect().setEnabled(true);
@@ -771,12 +766,21 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			}
 			else if (level == 2)
 			{
+				// Get the pseudo
+				String pseudo = (String) ((DefaultMutableTreeNode) value).getUserObject();
+				
 				// Client node
-				this.setIcon(UIManager.getIconResource("CLIENT_ICON"));
+				if (audioProcessor_.isTalking(pseudo))
+				{
+					this.setIcon(UIManager.getIconResource("SPEAKER_ICON"));
+				}
+				else
+				{
+					this.setIcon(UIManager.getIconResource("CLIENT_ICON"));
+				}
 				this.setFont(UIManager.getFontResource("FONT_TREE_CLIENT"));
 				
 				// Highlight the cell if it's the user's pseudo
-				String pseudo = (String) ((DefaultMutableTreeNode) value).getUserObject();
 				if (pseudo.equals(pseudo_))
 				{
 					this.setForeground(UIManager.getColorResource("TREE_PSEUDO_COLOR"));

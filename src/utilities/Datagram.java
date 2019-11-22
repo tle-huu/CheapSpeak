@@ -9,10 +9,12 @@ import java.util.UUID;
  * Wrapper around raw data to be sent over the network
  *
  */
+@SuppressWarnings("serial")
 public class Datagram implements Serializable
 {
 
 // PUBLIC
+	
 	public Datagram(final Object data)
 	{
 		timestamp_ = new Date();
@@ -25,7 +27,6 @@ public class Datagram implements Serializable
 		data_ = data;
 		client_uuid_ = client_uuid;
 	}
-
 
 	public Datagram(final UUID client_uuid, final Date timestamp, final Object data)
 	{
