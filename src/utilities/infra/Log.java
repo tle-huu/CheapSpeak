@@ -92,6 +92,7 @@ public class Log
 
 		    fileWriter = new FileWriter(file, true);
 		    printWriter = new PrintWriter(fileWriter);
+			System.out.println("Logs can be found at: " + logFile);
 
 		}
 		catch (IOException e)

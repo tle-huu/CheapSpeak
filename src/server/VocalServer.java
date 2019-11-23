@@ -36,7 +36,7 @@ public class VocalServer
 	final int THREADS_NUMBER = 11;
 
 // PUBLIC
-	public VocalServer(int port) throws IOException
+	public VocalServer(int port) throws IOException, Exception
 	{
 		port_ = port;
 
@@ -46,7 +46,7 @@ public class VocalServer
 		boolean success = init_rooms();
 		if (!success)
 		{
-			assert false : "Server cannot run without rooms initialization";
+			throw new Exception("Server cannot run without rooms initialization");
 		}
 	}
 
@@ -285,6 +285,7 @@ public class VocalServer
 	// ThreadPools for client connection thread
 	private ExecutorService 				executor_ = Executors.newFixedThreadPool(THREADS_NUMBER);
 
+	// Back up thread pool used when the main threadpool capacity is reached
 	private ExecutorService 				fallthrough_executor_ = Executors.newCachedThreadPool();
 
 }

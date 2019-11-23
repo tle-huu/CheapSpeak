@@ -21,6 +21,8 @@ import utilities.infra.Log;
 /*
  * The Client class represents the low-level interface for network communication
  *
+ * An independant thread is reading from the socket and enqueueing messages in cache
+ * The enqueued message can then be consumed by higher level classes
  */
 public class Client
 {
@@ -57,12 +59,10 @@ public class Client
         catch (IOException e)
         {
             Log.LOG(Log.Level.ERROR, "Error instanciating Client: "  + e.getMessage());
-            assert false: "Error constructing Client";
             throw e;
         }
     }
 
-    // WIP
     public ConnectState connect(final String user_name)
     {
        return handshake(user_name);
@@ -108,6 +108,9 @@ public class Client
 	                    try
 	                    {
 	                        Log.LOG(Log.Level.INFO, "Listening thread is running");
+
+                            running_.set(true);
+
 	                        while (running_.get())
 	                        {
 	                            try
@@ -132,7 +135,7 @@ public class Client
 	                                Log.LOG(Log.Level.ERROR, "Client listening thread error in while loop: " + e);
 	                                break;
 	                            }
-	                        } 
+	                        }
 	
 	                    }
 	                    catch (Exception e)
@@ -204,7 +207,7 @@ public class Client
         return event;
     }
 
-    // [WIP]
+    // Implements the connection handshake with the server
     private ConnectState handshake(final String name)
     {
         HandshakeEvent event = null;
@@ -307,7 +310,7 @@ public class Client
         }
         finally
         {
-            running_.compareAndSet(true, false);
+            running_.set(false);
         }
         return true;
     }
@@ -324,7 +327,7 @@ public class Client
     private Socket socket_;
 
     // Set to true for testing
-    private AtomicBoolean running_ = new AtomicBoolean(true);
+    private AtomicBoolean running_ = new AtomicBoolean(false);
 
 	// Input Stream
 	private ObjectInputStream input_stream_ ;

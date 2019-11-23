@@ -15,7 +15,11 @@ public interface EventEngine
 
 	default boolean handleEvent(Event event)
 	{
-		assert event != null : "HandleEvent received a null event";
+		if (event == null)
+		{
+			Log.LOG(Log.Level.WARNING, "handleEvent has been used with a null event");
+			return false;
+		}
 
 		switch (event.type())
 		{

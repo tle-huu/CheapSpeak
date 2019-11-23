@@ -35,7 +35,7 @@ public class ServerMain
         {
             server = new VocalServer(port);
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             Log.LOG(Log.Level.FATAL, "The server cannot be created");
             return ;

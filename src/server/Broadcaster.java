@@ -8,7 +8,7 @@ import utilities.infra.Log;
 /*
  *
  * Broadcasting thread getting message from server broadcasting queue
- * and handing them out to the clients connections sockets for them
+ * and handing them out to the clients connection sockets for them
  * to be sent over the network
  *
  */
@@ -27,7 +27,7 @@ public class Broadcaster extends Thread
     {
         Log.LOG(Log.Level.INFO, "Starting Broadcasting thread");
 
-        running_.getAndSet(true);
+        running_.set(true);
 
         // Main loop reading from the shared ringbuffer for new events
         // The loop is tied to the main thread status
@@ -50,7 +50,7 @@ public class Broadcaster extends Thread
         }
 
         Log.LOG(Log.Level.INFO, "Shutting down Broadcaster thread");
-        running_.getAndSet(false);
+        running_.set(false);
 
         // Shutting down main server
         if (vocal_server_.running())

@@ -14,11 +14,15 @@ public class ServerRoom
 
 // PUBLIC METHODS
 
-	public ServerRoom(final String name, final VocalServer vocal_server)
+	public ServerRoom(final String name, final VocalServer vocal_server) throws Exception
 	{
 		name_ = name;
 		vocal_server_ = vocal_server;
-		assert vocal_server_ != null : "Cannot instanciate room with null server reference";
+
+		if (vocal_server == null)
+		{
+			throw new Exception("Cannot instanciate room with null server reference");
+		}
 	}
 
 	// Return true if the set did not contain the given uuid
