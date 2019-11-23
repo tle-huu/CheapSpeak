@@ -33,6 +33,9 @@ public class AudioProcessor
     {
         // Stop the threads
     	running_.set(false);
+    	
+    	// Close microphone
+    	microphone_.close();
     }
 
 	public void mute()
@@ -126,6 +129,10 @@ public class AudioProcessor
 	
 	public boolean isTalking(final String userName)
 	{
+		if (!isTalking_.containsKey(userName))
+		{
+			return false;
+		}
 		return isTalking_.getOrDefault(userName, 0) > 0;
 	}
 	
@@ -174,6 +181,7 @@ public class AudioProcessor
                         cond_.awaitUninterruptibly();
                         lock_.unlock();
                     }
+                    Log.LOG(Log.Level.INFO, "The microphone thread stopped running");
                 }
 			}
 		);

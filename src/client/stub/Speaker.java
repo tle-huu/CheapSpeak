@@ -44,10 +44,11 @@ public class Speaker
          return speaker_.write(buffer, offset, length);
 	}
 
-	public void stop()
+	public void close()
 	{
 		speaker_.stop();
 		speaker_.flush();
+		speaker_.close();
 	}
 
 // PRIVATE ATTRIBUTES

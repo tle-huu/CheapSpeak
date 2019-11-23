@@ -44,10 +44,11 @@ public class Microphone
          return microphone_.read(buffer, offset, length);
 	}
 
-	public void stop()
+	public void close()
 	{
 		microphone_.stop();
 		microphone_.flush();
+		microphone_.close();
 	}
 
 // PRIVATE ATTRIBUTES

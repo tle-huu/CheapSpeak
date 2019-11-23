@@ -94,8 +94,11 @@ public class AudioChannel extends Thread
 	
 	public void shutdown()
     {
-        // Stop the threads
+        // Stop the thread
     	running_.set(false);
+    	
+    	// Close speaker
+    	speaker_.close();
     }
 
 	public final UUID uuid()
