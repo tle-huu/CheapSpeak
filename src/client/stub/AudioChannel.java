@@ -3,8 +3,10 @@ package client.stub;
 import java.lang.Math; 
 import java.util.UUID;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import utilities.Datagram;
+import javax.sound.sampled.LineUnavailableException;
+
 import utilities.SoundPacket;
 import utilities.events.VoiceEvent;
 import utilities.infra.Log;
@@ -12,101 +14,122 @@ import utilities.infra.Log;
 public class AudioChannel extends Thread
 {
 
-// PUBLIC
-	public AudioChannel(UUID client_uuid)
+// PUBLIC METHODS
+	
+	public AudioChannel(UUID clientUuid)
 	{
-		uuid_ = client_uuid;
+		uuid_ = clientUuid;
 	}
 
 	@Override
 	public void run()
 	{
+		// Start speaker
 		try
         {
-            Log.LOG(Log.Level.INFO, "Audio channel for [" + uuid_.toString() + "] running");
-
-            boolean res = speaker_.open();
-
-            if (!res)
-            {
-                Log.LOG(Log.Level.ERROR, "Error trying to open microphone");
-                return;
-            }
-
-            speaker_.start();
-
-            while (true)
-            {
-            	// No more message
-            	try
+            startSpeaker();
+        }
+        catch (LineUnavailableException e)
+        {
+        	Log.LOG(Log.Level.ERROR, "Error instantiating speaker line: " + e.getMessage());
+        	return;
+        }
+		
+		// Set the atomic boolean running to true
+        running_.set(true);
+		
+        while (running_.get())
+        {
+        	// No more message
+        	try
+        	{
+				// Nothing to read from the buffer
+            	if (queue_.isEmpty())
             	{
-					// Nothing to read from the buffer
-                	if (queue_.isEmpty())
-                	{
-                		Thread.sleep(20);
-                		continue;
-                	}
-            	}
-            	catch (InterruptedException e)
-            	{
+            		Thread.sleep(20L);
             		continue;
             	}
+        	}
+        	catch (InterruptedException e)
+        	{
+        		continue;
+        	}
 
-                try
+            try
+            {
+				// Poping out from the queue
+                VoiceEvent voiceEvent = queue_.get(0);
+                queue_.remove(0);
+
+                // Get sound packet
+                SoundPacket soundPacket = voiceEvent.soundPacket();
+
+                // Playing random noise if the packet does not contain any data
+                if (soundPacket == null)
                 {
-					// Poping out from the queue
-                    VoiceEvent voice_event = queue_.get(0);
-                    queue_.remove(0);
+                    byte[] noise = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
 
-                    SoundPacket sound_packet = voice_event.soundPacket();
-
-                    // Playing random noise if the packet does not contain any data
-                    if (sound_packet == null)
+                    for (int i = 0; i < noise.length; ++i)
                     {
-                        byte[] noise = new byte[SoundPacket.DEFAULT_DATA_LENGTH];
-
-                        for (int i = 0; i < noise.length; i++)
-                        {
-                            noise[i] = (byte) ((Math.random() * 3) - 1);
-                        }
-                        speaker_.write(noise, 0, noise.length);
+                        noise[i] = (byte) ((Math.random() * 3) - 1);
                     }
-                    else
-                    {
-                        speaker_.write(sound_packet.data(), 0, sound_packet.data().length);
-                    }
+                    speaker_.write(noise, 0, noise.length);
                 }
-                catch (Exception e)
+                else
                 {
-                    Log.LOG(Log.Level.ERROR, "AudioChannel error: " + e);
+                    speaker_.write(soundPacket.data(), 0, soundPacket.data().length);
                 }
-            } 
-
+            }
+            catch (ArrayIndexOutOfBoundsException e)
+            {
+                Log.LOG(Log.Level.WARNING, "AudioChannel error: cannot get a voice event from the queue");
+            }
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        } 
 	}
 
-// PUBLIC
-	public void push(final VoiceEvent voice_event)
+	public void push(final VoiceEvent voiceEvent)
 	{
-		queue_.add(voice_event);
+		queue_.add(voiceEvent);
 	}
+	
+	public void shutdown()
+    {
+        // Stop the threads
+    	running_.set(false);
+    }
 
 	public final UUID uuid()
 	{
 		return uuid_;
 	}
+	
+	private void startSpeaker() throws LineUnavailableException
+	{
+		// Instantiate speaker
+        speaker_ = new Speaker();
+        
+        // Open speaker
+        boolean isOpen = speaker_.open();
+        if (!isOpen)
+        {
+            Log.LOG(Log.Level.ERROR, "Error trying to open speaker");
+            return;
+        }
 
-// PRIVATE
+        // Start speaker
+        speaker_.start();
+        
+        Log.LOG(Log.Level.INFO, "Audio channel for [" + uuid_.toString() + "] running");
+	}
+
+// PRIVATE ATTRIBUTES
+	
 	private Vector<VoiceEvent> queue_ = new Vector<VoiceEvent>();
 
-    private Speaker     	 speaker_ = new Speaker();
+    private Speaker speaker_;
 
-    private final UUID 		 uuid_;
-
-
+    private AtomicBoolean running_ = new AtomicBoolean(false);
+    
+    private final UUID uuid_;
 
 }

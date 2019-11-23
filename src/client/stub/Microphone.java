@@ -8,43 +8,27 @@ import javax.sound.sampled.TargetDataLine;
 
 import utilities.infra.Log;
 
-/*
- *	Wrapper
- *
- */
 public class Microphone
 {
 
-// PRIVATE CONST
-	
-	static private final float 	SAMPLE_RATE = 8000.0f;
-	static private final int 	SAMPLE_SIZE = 8;
+// PUBLIC METHODS
 
-// PUBLIC
-
-	public Microphone()
+	// Constructor
+	public Microphone() throws LineUnavailableException
 	{
-		try
-		{
-			DataLine.Info info = new DataLine.Info(TargetDataLine.class, format_);
-			microphone_ = (TargetDataLine) AudioSystem.getLine(info);
-	    }
-	    catch (LineUnavailableException err)
-	    {
-	    	Log.LOG(Log.Level.ERROR, "Error instanciating Microphone: " + err.getMessage());
-	    	assert false : "Impossible to construct microphone";
-	    }
+		DataLine.Info info = new DataLine.Info(TargetDataLine.class, FORMAT);
+		microphone_ = (TargetDataLine) AudioSystem.getLine(info);
 	}
 
 	public boolean open()
 	{
 		try
 		{
-			microphone_.open(format_);
+			microphone_.open(FORMAT);
 		}
-		catch (LineUnavailableException err)
+		catch (LineUnavailableException e)
 		{
-	    	Log.LOG(Log.Level.ERROR, "Error opening microphone line: " + err.getMessage());
+	    	Log.LOG(Log.Level.ERROR, "Error opening microphone line: " + e.getMessage());
 			return false;
 		}
 		return true;
@@ -55,9 +39,9 @@ public class Microphone
 		microphone_.start();
 	}
 
-	public int read(byte[] buffer, int offset, int length)
+	public int read(final byte[] buffer, final int offset, final int length)
 	{
-         return microphone_.read(buffer, 0, length);
+         return microphone_.read(buffer, offset, length);
 	}
 
 	public void stop()
@@ -66,9 +50,14 @@ public class Microphone
 		microphone_.flush();
 	}
 
-// PRIVATE
+// PRIVATE ATTRIBUTES
 
-	private final AudioFormat 		format_ = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE, /* channels */ 1, true, true);
-	private TargetDataLine 			microphone_;
+	private final static float SAMPLE_RATE = 8000.0f;
+	private final static int   SAMPLE_ENCODING = 8;
+	
+	// Format: sample rate, sample encoding (in bits), channels number, signed, big endian
+	private final static AudioFormat FORMAT = new AudioFormat(SAMPLE_RATE, SAMPLE_ENCODING, 1, true, true);
+	
+	private TargetDataLine microphone_;
 
 }

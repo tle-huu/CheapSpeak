@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.*;
 
 import utilities.Datagram;
-import utilities.RingBuffer;
+import utilities.FixedVector;
 import utilities.events.Event;
 import utilities.infra.Log;
 
@@ -258,7 +258,7 @@ public class VocalServer
 	private ConcurrentHashMap<String, ServerRoom> rooms_ = new ConcurrentHashMap<String, ServerRoom>();
 
 	// Shared ring buffer for broadcaster and client connections communication
-	private RingBuffer<Event> 			broadcast_queue_ = new RingBuffer<Event>();
+	private FixedVector<Event> 			broadcast_queue_ = new FixedVector<Event>();
 
 	/* 
 	 * Server infras

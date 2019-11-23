@@ -98,8 +98,12 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			// Set the current room to default room
 			currentRoom_ = DEFAULT_ROOM_NAME;
 			
-			// Start the audio processor
-			audioProcessor_.startMicrophoneThread();
+			// Start the audio processor microphone
+			boolean isStarted = audioProcessor_.startMicrophone();
+			if (!isStarted)
+			{
+				showNoMicrophoneDialog();
+			}
 		}
 		
 		return true;
@@ -369,6 +373,15 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		JOptionPane.showMessageDialog(null, 
 				textDialog + "\nPlease try with another pseudo :)", 
 				"You cannot connect with this pseudo", 
+				JOptionPane.WARNING_MESSAGE);
+	}
+	
+	private void showNoMicrophoneDialog()
+	{
+		// Display a message to inform the user he cannot use his microphone
+		JOptionPane.showMessageDialog(null, 
+				"The microphone cannot be used." + "\nPlease try to reconnect :)", 
+				"There is an error with the microphone", 
 				JOptionPane.WARNING_MESSAGE);
 	}
 	

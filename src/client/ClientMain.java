@@ -1,4 +1,6 @@
-package client.gui;
+package client;
+
+import client.gui.SplashScreen;
 
 public class ClientMain
 {

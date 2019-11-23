@@ -2,19 +2,15 @@ package utilities;
 
 import java.util.Vector;
 
-
 /*
  *  Templated RingBuffer class for inter threads communication
  *  
  *  A vector is used as the underlying structure to ensure thread safety
- *  // TODO: MAke it an actual ring buffer
  */
-public class RingBuffer<T>
+public class FixedVector<T>
 {
-// PRIVATE CONST
-    private final int DEFAULT_SIZE = 1024;
 
-// PUBLIC
+// PUBLIC METHODS
 
     public boolean push(T elem)
     {
@@ -42,7 +38,9 @@ public class RingBuffer<T>
         return buffer_.isEmpty();
     }
 
-// PRIVATE
+// PRIVATE ATTRIBUTES
+    
+    private final int DEFAULT_SIZE = 1024;
 
     private Vector<T> buffer_ = new Vector<T>(DEFAULT_SIZE);
 

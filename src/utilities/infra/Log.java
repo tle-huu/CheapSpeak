@@ -41,15 +41,11 @@ public class Log
 		
 	};
 
-	// TODO: Should know where to log the message (standard output or file)
+// PUBLIC METHOD
+	
 	public static void LOG(Level level, Object message)
 	{
 		System.out.println(level + " " + message.toString());
 	}
-
-// PRIVATE
-
-	private final static String client_log_file_ = "";
-	private final static String server_log_file_ = "";
 
 }

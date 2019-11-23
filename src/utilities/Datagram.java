@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Date;  
 import java.util.UUID;
 
-
 /*
  * Wrapper around raw data to be sent over the network
  *
@@ -57,8 +56,8 @@ public class Datagram implements Serializable
 
 // PRIVATE
 
-	private 	  UUID 		client_uuid_ = null;
-	final private Date 		timestamp_;
-	final private Object  	data_;
+	private 	  UUID   client_uuid_ = null;
+	final private Date   timestamp_;
+	final private Object data_;
 
 }
