@@ -2,28 +2,20 @@ package server;
 
 import java.io.IOException;
 
-import java.net.InetAddress;
-import java.net.Inet4Address;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
-import java.util.ArrayList;
+import java.util.UUID;
+import java.util.Vector;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.*;
 
-import utilities.Datagram;
 import utilities.FixedVector;
 import utilities.events.Event;
 import utilities.infra.Log;
-
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.UUID;
-import java.util.Vector;
 
 /*
  * Server class listening for new connections and handling network architecture

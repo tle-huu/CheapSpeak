@@ -1,8 +1,6 @@
 package server;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -10,18 +8,8 @@ import java.net.Socket;
 import java.util.UUID;
 import java.util.Vector;
 
-import java.io.ByteArrayOutputStream;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.TargetDataLine;
-
-import utilities.Datagram;
 import utilities.events.*;
 import utilities.infra.Log;
-
-import javax.sound.sampled.SourceDataLine;
 
 /*
  * A ClientConnection represents the connection worker associated to a client
