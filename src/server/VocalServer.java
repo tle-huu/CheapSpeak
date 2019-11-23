@@ -33,7 +33,7 @@ public class VocalServer
 // PRIVATE CONST
 
 	// Starting number of threads in the thread pool
-	final int THREADS_NUMBER = 10;
+	final int THREADS_NUMBER = 11;
 
 // PUBLIC
 	public VocalServer(int port) throws IOException
@@ -73,13 +73,25 @@ public class VocalServer
 		while (running_.get())
 		{
             Socket new_client_socket = listening_socket_.accept();
-            Log.LOG(Log.Level.INFO, "New client " + ((ThreadPoolExecutor)executor_).getActiveCount());
+            Log.LOG(Log.Level.INFO, "New client [" + ((ThreadPoolExecutor)executor_).getActiveCount() + " < " + THREADS_NUMBER + "]");
 
             try
             {
 	            ClientConnection new_connection_client = new ClientConnection(this, new_client_socket);
 	            add_client(new_connection_client);
-	            executor_.execute(new_connection_client);
+
+
+
+	            if (((ThreadPoolExecutor)executor_).getActiveCount() < THREADS_NUMBER)
+	            {
+		            Log.LOG(Log.Level.INFO, "Using fixed thread pool thread: " + ((ThreadPoolExecutor)executor_).getActiveCount() + " < " + THREADS_NUMBER + "]");
+		            executor_.execute(new_connection_client);
+	            }
+	            else
+	            {
+		            Log.LOG(Log.Level.INFO, "FixedThreadPool full, creating a new thread from fallthrough threadpool");
+		            fallthrough_executor_.execute(new_connection_client);
+	            }
             }
             catch (IOException e)
             {
@@ -270,8 +282,9 @@ public class VocalServer
 
 	private AtomicBoolean 					running_ = new AtomicBoolean(false);
 
-	// ThreadPool for client connection thread
-	// TODO: Change it to a dynamic thread pool
+	// ThreadPools for client connection thread
 	private ExecutorService 				executor_ = Executors.newFixedThreadPool(THREADS_NUMBER);
+
+	private ExecutorService 				fallthrough_executor_ = Executors.newCachedThreadPool();
 
 }
