@@ -23,7 +23,7 @@ import utilities.infra.Log;
  * The architecture is made of several type of threads:
  *
  *	- Main 				 thread (1): Listening and accepting new connections
- *	- Broacasting 		 thread (1): "Listening" from a shared ringbuffer for new packets
+ *	- Broacasting 		 thread (1): "Listening" from a shared vector for new packets
  *	- Client Connections threads(n): Represents the connetion with the clients.
  *									 Listens for new events and pushing them in the shared ringbuffer
  * 
@@ -32,6 +32,7 @@ public class VocalServer
 {
 // PRIVATE CONST
 
+	// Starting number of threads in the thread pool
 	final int THREADS_NUMBER = 10;
 
 // PUBLIC
@@ -60,11 +61,13 @@ public class VocalServer
 
 		Log.LOG(Log.Level.INFO, "Starting Server");
 		// Setting running flag
-		running_ .getAndSet(true);
+		running_ .set(true);
 
 		// Starting Broadcasting thread
 		Broadcaster broadcaster = new Broadcaster(this);
-		broadcaster.start();
+		// broadcaster.start();
+        executor_.execute(broadcaster);
+
 
 		// Starting main loop of accepting new connections
 		while (running_.get())
@@ -86,7 +89,7 @@ public class VocalServer
 		}
 
 		Log.LOG(Log.Level.INFO, "Shutting down Server");
-		running_ .getAndSet(false);
+		running_ .set(false);
 
 		// Waiting for broadcaster thread to finish broadcasting
 		try
@@ -122,6 +125,9 @@ public class VocalServer
 		rooms_.remove(room_name);
 	}
 
+
+	// Move client from an old room to a new room.
+	// If oldRoomName is null, just update the new room with the client id
 	public boolean update_room(final UUID clientUUID, final String oldRoomName, final String newRoomName)
 	{
 		if (oldRoomName != null)
@@ -138,7 +144,7 @@ public class VocalServer
 			oldRoom.remove_client(clientUUID);
 		}
 
-        // Adding the client to his new room
+        // Adding the client to the new room
         ServerRoom newRoom = rooms_.get(newRoomName);
 		if (newRoom == null)
 		{
@@ -150,7 +156,33 @@ public class VocalServer
 		return true;
 	}
 
-	// TODO: Bad getter. Should disappear and be turned into a proper exposed API
+	public boolean remove_client(UUID client_uuid)
+	{
+		ServerRoom client_room = rooms_.get(clients_.get(client_uuid).currentRoom());
+		client_room.remove_client(client_uuid);
+		clients_.remove(client_uuid);
+		return true;
+	}
+
+	public void shutdown()
+	{
+		Log.LOG(Log.Level.WARNING, "Server has been shutdown from a child thread");
+		running_.set(false);
+	}
+
+	public boolean is_present(final UUID current_client_uuid, final String user_name)
+	{
+		for (ClientConnection client : clients_.values())
+		{
+			if (current_client_uuid != client.uuid() && client.user_name().equals(user_name))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Returns the rooms as a vector not to interfeere with the hashtable
     public Vector<ServerRoom> rooms_vector()
     {
         Vector<ServerRoom> rooms = new Vector<ServerRoom>(rooms_.size());
@@ -177,39 +209,16 @@ public class VocalServer
 		return clients_.get(client_uuid);
 	}
 
-	public boolean remove_client(UUID client_uuid)
-	{
-		ServerRoom client_room = rooms_.get(clients_.get(client_uuid).currentRoom());
-		client_room.remove_client(client_uuid);
-		clients_.remove(client_uuid);
-		return true;
-	}
-
-	public void shutdown()
-	{
-		Log.LOG(Log.Level.WARNING, "Server has been shutdown from a child thread");
-		running_.getAndSet(false);
-	}
-
 	public boolean running()
 	{
 		return running_.get();
 	}
 
-	public boolean is_present(final UUID current_client_uuid, final String user_name)
-	{
-		for (ClientConnection client : clients_.values())
-		{
-			if (current_client_uuid != client.uuid() && client.user_name().equals(user_name))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+
 
 // PRIVATE
 
+	// Initializes rooms in the server
 	private boolean init_rooms()
 	{
 		try
@@ -234,9 +243,9 @@ public class VocalServer
 		}
 	}
 
+	// Adds client to the hashmap
 	private boolean add_client(ClientConnection client_conn)
 	{
-		// TODO: Protect this with a better mutex system
 		clients_.put(client_conn.uuid(), client_conn);
 		return true;
 	}

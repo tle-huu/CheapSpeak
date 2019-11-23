@@ -1,6 +1,7 @@
 package client;
 
 import client.gui.SplashScreen;
+import utilities.infra.Log;
 
 public class ClientMain
 {
@@ -9,6 +10,9 @@ public class ClientMain
 	
 	public static void main(String[] args)
 	{
+		// Setting logger
+        Log.id(Log.CLIENT_ID);
+
 		new SplashScreen();
 	}
 	

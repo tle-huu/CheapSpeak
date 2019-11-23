@@ -9,6 +9,9 @@ public class ServerMain
 {
     public static void main(String[] argv)
     {
+        // Setting logger
+        Log.id(Log.SERVER_ID);
+
         // Get the port
         int port = DEFAULT_PORT;
         if (argv.length == 1)

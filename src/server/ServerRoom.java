@@ -33,16 +33,6 @@ public class ServerRoom
 		return client_uuids_set_.remove(uuid);
 	}
 
-	public String name()
-	{
-		return name_;
-	}
-
-	public UUID uuid()
-	{
-		return uuid_;
-	}
-
 	public Vector<ClientConnection> clients()
 	{
 		Vector<ClientConnection> clients = new Vector<ClientConnection>();
@@ -54,19 +44,15 @@ public class ServerRoom
 		return clients;
 	}
 
-	public void add_to_history(final TextEvent text_event)
+	// Simple getters
+	public String name()
 	{
-		history_.add(text_event);
+		return name_;
 	}
 
-	public void clear_history()
+	public UUID uuid()
 	{
-		history_.clear();
-	}
-
-	public Vector<TextEvent> history()
-	{
-		return history_;
+		return uuid_;
 	}
 
 	@Override
@@ -84,7 +70,5 @@ public class ServerRoom
 	final private VocalServer vocal_server_;
 
 	final private UUID uuid_ = UUID.randomUUID();
-
-	private Vector<TextEvent> history_ = new Vector<TextEvent>();
 
 }

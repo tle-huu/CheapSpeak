@@ -40,7 +40,7 @@ public class ClientConnection implements Runnable, EventEngine
             throw err;
         }
 
-        System.out.println("new client: " + uuid_.toString());
+        Log.LOG(Log.Level.INFO, "New ClientConnection: " + uuid_.toString());
     }
 
     public void run()
@@ -84,9 +84,6 @@ public class ClientConnection implements Runnable, EventEngine
                     // Process the event
                     handleEvent(event);
 
-                    // Pushing to broadcaster thread
-                    // broadcast(event);
-
                 }
                 catch (Exception e)
                 {
@@ -119,6 +116,7 @@ public class ClientConnection implements Runnable, EventEngine
         }
         catch (IOException e)
         {
+            Log.LOG(Log.Level.ERROR, "[ClientConnection] (" + user_name_ + ") Error in sending event of type " + event.type());
             return false;
         }
     }
@@ -146,23 +144,18 @@ public class ClientConnection implements Runnable, EventEngine
     public boolean handleEnterRoom(EnterRoomEvent event)
     {
 
+        // Updating the rooms
         boolean res = vocal_server_.update_room(uuid_, currentRoom_, event.roomName());
         if (res == false)
         {
             Log.LOG(Log.Level.ERROR, "HandleEnterRoom error: could not update rooms");
             return false;
         }
+
+        // Updating internal current room for client
         currentRoom_ = event.roomName();
 
         broadcast(event);
-
-        // ServerRoom room = vocal_server_.rooms().get(currentRoom_);
-
-        // for (TextEvent text_event : room.history())
-        // {
-        //     Log.LOG(Log.Level.ERROR, "XXXXXXXX");
-        //     send(text_event);
-        // }
 
         return true;
     }
@@ -170,7 +163,7 @@ public class ClientConnection implements Runnable, EventEngine
     @Override
     public boolean handleNewRoom(NewRoomEvent event)
     {
-        // vocal_server_.add_room(new ServerRoom(event.room(), vocal_server_));
+        Log.LOG(Log.Level.INFO, "HandleNewRoom triggered");
         broadcast(event);
 
         return true;
@@ -179,7 +172,7 @@ public class ClientConnection implements Runnable, EventEngine
     @Override
     public boolean handleRemoveRoom(RemoveRoomEvent event)
     {
-        // vocal_server_.remove_room(event.room());
+        Log.LOG(Log.Level.INFO, "HandleNewRoom triggered");
         broadcast(event);
 
         return true;
@@ -197,7 +190,6 @@ public class ClientConnection implements Runnable, EventEngine
     {
         ServerRoom current_room = vocal_server_.rooms().get(currentRoom_);
 
-        current_room.add_to_history(event);
         broadcast(event);
         return true;
     }
