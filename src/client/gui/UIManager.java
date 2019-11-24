@@ -60,12 +60,12 @@ public class UIManager
 		}
 		catch (NoSuchFieldException e)
 		{
-			Log.LOG(Log.Level.WARNING, resourceName + " is not a resource !");
+			Log.LOG(Log.Level.ERROR, resourceName + " is not a resource !");
 			e.printStackTrace();
 		}
 		catch (SecurityException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.WARNING, "Security violation for this resource: " + resourceName);
 		}
 		return null;
 	}
@@ -79,11 +79,11 @@ public class UIManager
 		}
 		catch (IllegalArgumentException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.ERROR, resourceName + " is not a resource !");
 		}
 		catch (IllegalAccessException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.WARNING, "Security violation for this resource: " + resourceName);
 		}
 		return null;
 	}
@@ -97,11 +97,11 @@ public class UIManager
 		}
 		catch (IllegalArgumentException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.ERROR, resourceName + " is not a resource !");
 		}
 		catch (IllegalAccessException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.WARNING, "Security violation for this resource: " + resourceName);
 		}
 		return null;
 	}
@@ -115,11 +115,11 @@ public class UIManager
 		}
 		catch (IllegalArgumentException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.ERROR, resourceName + " is not a resource !");
 		}
 		catch (IllegalAccessException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.WARNING, "Security violation for this resource: " + resourceName);
 		}
 		return null;
 	}
@@ -133,11 +133,11 @@ public class UIManager
 		}
 		catch (IllegalArgumentException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.ERROR, resourceName + " is not a resource !");
 		}
 		catch (IllegalAccessException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.WARNING, "Security violation for this resource: " + resourceName);
 		}
 		return null;
 	}

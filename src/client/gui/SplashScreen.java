@@ -10,6 +10,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 
+import utilities.infra.Log;
+
 @SuppressWarnings("serial")
 public class SplashScreen extends JWindow
 {
@@ -34,7 +36,7 @@ public class SplashScreen extends JWindow
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			Log.LOG(Log.Level.ERROR, "Cannot load the splash screen image");
 		}
 		
 		// Set the bar

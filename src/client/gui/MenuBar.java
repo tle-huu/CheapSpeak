@@ -2,13 +2,17 @@ package client.gui;
 
 import java.awt.event.KeyEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSlider;
 import javax.swing.KeyStroke;
+import javax.swing.border.Border;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar
@@ -32,6 +36,12 @@ public class MenuBar extends JMenuBar
 		// Speaker menu
 		mute_.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
 		speaker_.add(mute_);
+		speaker_.addSeparator();
+		volumeLabel_.setBorder(BORDER_VOLUME_LABEL);
+		speaker_.add(volumeLabel_);
+		volume_.setMinimum(MIN_VOLUME);
+		volume_.setMaximum(MAX_VOLUME);
+		volume_.setValue(DEFAULT_VOLUME);
 		speaker_.add(volume_);
 		
 		// Appearance menu
@@ -79,11 +89,6 @@ public class MenuBar extends JMenuBar
 		return exit_;
 	}
 
-	public JMenuItem volume()
-	{
-		return volume_;
-	}
-
 	public JMenuItem shortcuts()
 	{
 		return shortcuts_;
@@ -92,6 +97,11 @@ public class MenuBar extends JMenuBar
 	public JMenuItem contribute()
 	{
 		return contribute_;
+	}
+	
+	public JSlider volume()
+	{
+		return volume_;
 	}
 	
 	public ButtonGroup theme()
@@ -139,16 +149,24 @@ public class MenuBar extends JMenuBar
 	private JMenuItem connect_ = new JMenuItem("Connect"),
 					  disconnect_ = new JMenuItem("Disconnect"),
 					  exit_ = new JMenuItem("Exit"),
-					  volume_ = new JMenuItem("Volume"),
 					  shortcuts_ = new JMenuItem("Shortcuts"),
 					  contribute_ = new JMenuItem("Contribute");
+	
+	private JSlider volume_ = new JSlider(JSlider.HORIZONTAL);
+	
+	private ButtonGroup themeButtonGroup_ = new ButtonGroup();
 	
 	private JRadioButtonMenuItem light_ = new JRadioButtonMenuItem("Light"),
 								 dark_ = new JRadioButtonMenuItem("Dark");
 	
-	private ButtonGroup themeButtonGroup_ = new ButtonGroup();
-	
 	private JCheckBoxMenuItem mute_ = new JCheckBoxMenuItem("Mute"),
 							  fullscreen_ = new JCheckBoxMenuItem("Fullscreen");
+	
+	private final JLabel volumeLabel_ = new JLabel("Volume");
+	private final Border BORDER_VOLUME_LABEL = BorderFactory.createEmptyBorder(5, 0, 5, 150);
+	
+	private final int MIN_VOLUME = 0;
+	private final int MAX_VOLUME = 150;
+	private final int DEFAULT_VOLUME = 100;
 	
 }

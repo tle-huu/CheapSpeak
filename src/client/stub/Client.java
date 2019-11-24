@@ -45,6 +45,7 @@ public class Client
         socket_ = new Socket(InetAddress.getByName(host), port);
         inputStream_ = new ObjectInputStream(socket_.getInputStream());
         outputStream_ = new ObjectOutputStream(socket_.getOutputStream());
+        
         Log.LOG(Log.Level.INFO, "Connected to " + host + " on port " + port);
     }
 
@@ -80,13 +81,13 @@ public class Client
         return eventQueue_.pop();
     }
 
-    public void sendEvent(Event event)
+    public void sendEvent(final Event event)
     {
         try
         {
             outputStream_.writeObject((Event) event);
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             Log.LOG(Log.Level.ERROR, "Sending an event of type " + event.type().name() + " failed");
         }

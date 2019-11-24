@@ -9,9 +9,17 @@ public class SoundPacket implements Serializable
 // PUBLIC METHODS
 	
 	// Constructor
-    public SoundPacket(byte[] data)
+    public SoundPacket(final byte[] data)
     {
         data_ = data;
+    }
+    
+    public void amplify(double amplification)
+    {
+    	for (int i = 0; i < data_.length; ++i)
+    	{
+    		data_[i] *= amplification;
+    	}
     }
 
     public byte[] data()

@@ -22,7 +22,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.AbstractButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JSlider;
 import javax.swing.JTree;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -249,6 +252,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		
 		// Speaker menu
 		menuBar_.mute().addActionListener(new MuteListener());
+		menuBar_.volume().addChangeListener(new VolumeListener());
 		
 		// Appearance menu
 		ThemeListener themeListener = new ThemeListener();
@@ -290,8 +294,11 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		}
 		
 		// Stop the audio processor
-		audioProcessor_.shutdown();
-		audioProcessor_ = null;
+		if (audioProcessor_ != null)
+		{
+			audioProcessor_.shutdown();
+			audioProcessor_ = null;
+		}
 		
 		// Reset the rooms
 		rooms_ = new ArrayList<Room>();
@@ -299,15 +306,18 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		rooms_.add(defaultRoom_);
 		
 		// Switch to the connection panel
-		panelMain_ = null;
-		this.setContentPane(panelConnect_);
-		this.revalidate();
+		if (panelMain_ != null)
+		{
+			panelMain_ = null;
+			this.setContentPane(panelConnect_);
+			this.revalidate();
+			
+			Log.LOG(Log.Level.INFO, "Disconnected");
+		}
 		
 		// Reset the connect/disconnect buttons
 		menuBar_.connect().setEnabled(true);
-		menuBar_.disconnect().setEnabled(false);
-		
-		Log.LOG(Log.Level.INFO, "Disconnected");
+		menuBar_.disconnect().setEnabled(false);		
 	}
 	
 	private void exit()
@@ -449,7 +459,15 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			while (listening_.get() && client_ != null && client_.alive())
 			{
 				// Get an event
-				Event event = client_.getEvent();
+				Event event = null;
+				try
+				{
+					event = client_.getEvent();
+				}
+				catch (NullPointerException e)
+				{
+					continue;
+				}
 				
 				// Handle the event
 				if (event != null)
@@ -584,7 +602,8 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				revalidate();
 				
 				// Create the audio processor
-				audioProcessor_ = new AudioProcessor(client_, pseudo_, isMuted_);
+				double amplification = menuBar_.volume().getValue() / 100.0d;
+				audioProcessor_ = new AudioProcessor(client_, pseudo_, isMuted_, amplification);
 				audioProcessor_.setTree(panelMain_.tree());
 				
 				// Reset the connect/disconnect buttons
@@ -710,13 +729,29 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		{
 			// Mute/unmute the microphone
 			isMuted_ = menuBar_.mute().isSelected();
-			if (isMuted_)
+			if (audioProcessor_ != null)
 			{
-				audioProcessor_.mute();
+				if (isMuted_)
+				{
+					audioProcessor_.mute();
+				}
+				else
+				{
+					audioProcessor_.unmute();
+				}
 			}
-			else
+		}
+	}
+	
+	class VolumeListener implements ChangeListener
+	{
+		@Override
+		public void stateChanged(ChangeEvent e)
+		{
+			if (audioProcessor_ != null)
 			{
-				audioProcessor_.unmute();
+				double amplification = ((JSlider) e.getSource()).getValue() / 100.0d;
+				audioProcessor_.setAmplification(amplification);
 			}
 		}
 	}

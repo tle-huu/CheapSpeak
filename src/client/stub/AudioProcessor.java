@@ -22,11 +22,12 @@ public class AudioProcessor
 // PUBLIC METHODS
 	
 	// Constructor
-	public AudioProcessor(final Client client, final String userName, final boolean isMuted)
+	public AudioProcessor(final Client client, final String userName, final boolean isMuted, final double amplification)
 	{
 		client_ = client;
 		userName_ = userName;
         isMuted_ = new AtomicBoolean(isMuted);
+        amplification_ = amplification;
 	}
 	
     public void shutdown()
@@ -107,13 +108,19 @@ public class AudioProcessor
             channel.start();
         }
 
-        channel.push(event);
-        
+        // Amplification and speaker icon
         if (event.soundPacket() != null)
         {
-        	isTalking_.put(event.userName(), SPEAKER_ICON_MIN_TIME);
+        	// Amplification
+	        event.soundPacket().amplify(amplification_);
+	        
+	        // Trigger the speaker icon
+	        isTalking_.put(event.userName(), SPEAKER_ICON_MIN_TIME);
         	tree_.repaint(50L);
         }
+        
+        // Play the sound
+        channel.push(event);
 	}
 	
 	public void remove(final String userName, final UUID uuid)
@@ -125,6 +132,11 @@ public class AudioProcessor
 	public void setTree(final TreeRoom tree)
 	{
 		tree_ = tree;
+	}
+	
+	public void setAmplification(final double amplification)
+	{
+		amplification_ = amplification;
 	}
 	
 	public boolean isTalking(final String userName)
@@ -156,11 +168,12 @@ public class AudioProcessor
 
                             // Calculating absolute value mean to decide whether or not send the packet
                             int sum = 0;
-                            for (int x: data)
+                            for (int i = 0; i < data.length; ++i)
                             {
-                                sum += Math.abs(x);
+                                data[i] *= amplification_;
+                            	sum += Math.abs(data[i]);
                             }
-                            Log.LOG(Log.Level.DEBUG, "Sum microphone: [" + Integer.toString(sum) + "]");
+                            //Log.LOG(Log.Level.DEBUG, "Sum microphone: [" + Integer.toString(sum) + "]");
                             
                             SoundPacket soundPacket = null;
 
@@ -234,6 +247,8 @@ public class AudioProcessor
 	private AtomicBoolean isMuted_;
 
     private Microphone microphone_;
+    
+    private double amplification_ = 1.0d;
 
     private Hashtable<UUID, AudioChannel>      audioChannels_ = new Hashtable<UUID, AudioChannel>();
     private ConcurrentHashMap<String, Integer> isTalking_ = new ConcurrentHashMap<String, Integer>();
