@@ -75,7 +75,7 @@ public class PanelMessage extends JPanel implements ThemeUI
 		return (int) this.getPreferredSize().getHeight();
 	}
 	
-	public void setWidth(int width)
+	public void setWidth(final int width)
 	{
 		// Set the new width
 		width_ = width;

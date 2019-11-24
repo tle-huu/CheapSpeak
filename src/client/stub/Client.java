@@ -37,16 +37,29 @@ public class Client
 // PUBLIC METHODS
 	
 	// Constructor
-	public Client(String host, int port) throws UnknownHostException, IOException
+	public Client(final String host, final int port) throws UnknownHostException, IOException
     {
         host_ = host;
         port_ = port;
 
-        socket_ = new Socket(InetAddress.getByName(host), port);
-        inputStream_ = new ObjectInputStream(socket_.getInputStream());
-        outputStream_ = new ObjectOutputStream(socket_.getOutputStream());
+        try
+        {
+        	socket_ = new Socket(InetAddress.getByName(host), port);
+        	inputStream_ = new ObjectInputStream(socket_.getInputStream());
+        	outputStream_ = new ObjectOutputStream(socket_.getOutputStream());
         
-        Log.LOG(Log.Level.INFO, "Connected to " + host + " on port " + port);
+        	Log.LOG(Log.Level.INFO, "Connected to " + host + " on port " + port);
+        }
+        catch (UnknownHostException e)
+        {
+        	Log.LOG(Log.Level.ERROR, "The host " + host + " is unknown");
+        	throw e;
+        }
+        catch (IOException e)
+        {
+        	Log.LOG(Log.Level.FATAL, "The client cannot be created: " + e.getMessage());
+        	throw e;
+        }
     }
 
     public ConnectState connect(final String userName)
@@ -56,24 +69,12 @@ public class Client
     
     public boolean alive()
     {
-    	try (Socket socket = new Socket(host_, port_))
-    	{
-    		return true;
-        }
-    	catch (Exception e)
-    	{
-    		return false;
-        }
+    	return running_.get();
     }
 
     public void disconnect()
     {
         close();
-    }
-
-    public void start()
-    {
-        startListening();
     }
 
     public Event getEvent()
@@ -83,14 +84,27 @@ public class Client
 
     public void sendEvent(final Event event)
     {
-        try
+    	try
         {
             outputStream_.writeObject((Event) event);
         }
-        catch (Exception e)
+        catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "Sending an event of type " + event.type().name() + " failed");
+        	if (running_.get())
+            {
+        		Log.LOG(Log.Level.ERROR, "Sending an event of type " + event.type().name() + " failed");
+            }
         }
+    }
+    
+    public String host()
+    {
+    	return host_;
+    }
+    
+    public int port()
+    {
+    	return port_;
     }
 
 // PRIVATE METHODS
@@ -102,13 +116,16 @@ public class Client
                 @Override
                 public void run()
                 {
-                    while (running_.get() && alive())
+                    while (running_.get())
                     {
                     	Event event = read();
 
                         if (event == null)
                         {
-                            Log.LOG(Log.Level.WARNING, "Cannot read new event in listening loop");
+                        	if (running_.get())
+                            {
+                        		Log.LOG(Log.Level.WARNING, "Cannot read new event in listening loop");
+                            }
                             continue;
                         }
 
@@ -140,7 +157,11 @@ public class Client
         }
         catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "Client error in read: " + e.getMessage());
+            if (running_.get())
+            {
+            	Log.LOG(Log.Level.ERROR, "Client error in read: " + e.getMessage());
+            	running_.set(false);
+            }
         }
         catch (ClassNotFoundException e)
         {
@@ -168,7 +189,11 @@ public class Client
         }
         catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "Client error in read: " + e.getMessage());
+        	if (running_.get())
+            {
+        		Log.LOG(Log.Level.ERROR, "Client error in read: " + e.getMessage());
+        		running_.set(false);
+            }
         }
         catch (ClassNotFoundException e)
         {
@@ -258,7 +283,7 @@ public class Client
         }
 
         // Starting listening thread
-        start();
+        startListening();
 
         // Notifying server that we are ready to listen for incoming events
         event.state(HandshakeEvent.State.LISTENING);
@@ -269,7 +294,9 @@ public class Client
 
     private boolean close()
     {
-        try
+    	running_.set(false);
+    	
+    	try
         {
             outputStream_.close();
             socket_.close();
@@ -278,10 +305,6 @@ public class Client
         {
             Log.LOG(Log.Level.ERROR, "Error closing socket: " + e.getMessage());
             return false;
-        }
-        finally
-        {
-            running_.set(false);
         }
         
         return true;
@@ -300,7 +323,7 @@ public class Client
     private AtomicBoolean running_ = new AtomicBoolean(false);
 
 	// Input Stream
-	private ObjectInputStream inputStream_ ;
+	private ObjectInputStream inputStream_;
 
 	// Output Stream
 	private ObjectOutputStream outputStream_;

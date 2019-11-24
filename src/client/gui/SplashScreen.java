@@ -75,7 +75,7 @@ public class SplashScreen extends JWindow
 				}
 				catch (InterruptedException e)
 				{
-					e.printStackTrace();
+					Log.LOG(Log.Level.ERROR, "The main thread cannot sleep during the splash screen");
 				}
 			}
 			

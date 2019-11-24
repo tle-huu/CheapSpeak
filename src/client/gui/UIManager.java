@@ -61,7 +61,6 @@ public class UIManager
 		catch (NoSuchFieldException e)
 		{
 			Log.LOG(Log.Level.ERROR, resourceName + " is not a resource !");
-			e.printStackTrace();
 		}
 		catch (SecurityException e)
 		{

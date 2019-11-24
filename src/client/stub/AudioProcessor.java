@@ -168,10 +168,9 @@ public class AudioProcessor
 
                             // Calculating absolute value mean to decide whether or not send the packet
                             int sum = 0;
-                            for (int i = 0; i < data.length; ++i)
+                            for (int x: data)
                             {
-                                data[i] *= amplification_;
-                            	sum += Math.abs(data[i]);
+                            	sum += Math.abs(x);
                             }
                             //Log.LOG(Log.Level.DEBUG, "Sum microphone: [" + Integer.toString(sum) + "]");
                             

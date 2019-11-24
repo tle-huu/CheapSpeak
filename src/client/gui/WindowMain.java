@@ -85,7 +85,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	}
 	
 	@Override
-	public boolean handleConnection(ConnectionEvent event)
+	public boolean handleConnection(final ConnectionEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "Connection event received");
 		
@@ -113,7 +113,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	}
 
 	@Override
-	public boolean handleDisconnection(DisconnectionEvent event)
+	public boolean handleDisconnection(final DisconnectionEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "Disconnection event received");
 		
@@ -127,7 +127,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	}
 	
 	@Override
-	public boolean handleNewRoom(NewRoomEvent event)
+	public boolean handleNewRoom(final NewRoomEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "New room event received");
 		
@@ -141,7 +141,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	}
 
 	@Override
-	public boolean handleRemoveRoom(RemoveRoomEvent event)
+	public boolean handleRemoveRoom(final RemoveRoomEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "Remove room event received");
 		
@@ -162,7 +162,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	}
 
 	@Override
-	public boolean handleVoice(VoiceEvent event)
+	public boolean handleVoice(final VoiceEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "Voice event received");
 		
@@ -173,7 +173,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	}
 	
 	@Override
-	public boolean handleText(TextEvent event)
+	public boolean handleText(final TextEvent event)
 	{
 		Log.LOG(Log.Level.INFO, "Text event received");
 		
@@ -191,7 +191,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	}
 	
 	@Override
-	public boolean handleEnterRoom(EnterRoomEvent event)
+	public boolean handleEnterRoom(final EnterRoomEvent event)
     {
 		Log.LOG(Log.Level.INFO, "Enter room event received");
 		
@@ -272,10 +272,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	}
 	
 	private void disconnect()
-	{
-		// Stop listening to the server
-		listening_.set(false);
-		
+	{	
 		// Send the disconnection message to the server
 		if (client_ != null)
 		{
@@ -322,15 +319,23 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	
 	private void exit()
 	{
-		// Disconnect from the server
-		if (panelMain_ != null)
-		{
-			disconnect();
-		}
+		// Stop listening to the server
+		listening_.set(false);
 		
 		// Close the app
-		Log.LOG(Log.Level.INFO, "Exit");
-		System.exit(0);
+		try
+		{
+			Thread.sleep(100L);
+		}
+		catch (InterruptedException e)
+		{
+			Log.LOG(Log.Level.ERROR, "The exit thread cannot sleep");
+		}
+		finally
+		{
+			Log.LOG(Log.Level.INFO, "Exit");
+			System.exit(0);
+		}
 	}
 	
 	private void addRoom(final String room)
@@ -480,6 +485,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				}
 			}
 			
+			listening_.set(false);
 			Log.LOG(Log.Level.INFO, "Stop listening");
 			
 			// Disconnect the client from the server
@@ -568,6 +574,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 						
 					case OK:
 						isConnected = true;
+						Log.LOG(Log.Level.INFO, "Connected to the server");
 						break;
 						
 					default:
@@ -576,15 +583,12 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			}
 			catch (UnknownHostException e1)
 	        {
-	            Log.LOG(Log.Level.ERROR, "The host " + host + " is unknown");
 	            showUnknownHostDialog(host);
 	        }
 	        catch (IOException e1)
 	        {
-	        	Log.LOG(Log.Level.FATAL, "The client cannot be created");
 	        	showNoServerDialog();
 	        }
-			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
 			
 			// Set the main panel
 			if (isConnected)
