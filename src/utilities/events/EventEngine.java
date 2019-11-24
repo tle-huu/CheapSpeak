@@ -7,6 +7,7 @@ import utilities.events.NewRoomEvent;
 import utilities.events.RemoveRoomEvent;
 import utilities.events.TextEvent;
 import utilities.events.VoiceEvent;
+import utilities.infra.Log;
 
 public interface EventEngine
 {

@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.File;
+import java.util.Date;
+import java.sql.Timestamp;
 
 /*
  * Single class for logging purpose
@@ -51,15 +53,15 @@ public class Log
 	
 	public static void LOG(Level level, Object message)
 	{
-		String formatted_msg = level + " " + message.toString();
+		String formattedMsg = new Timestamp(new Date().getTime()).toString() + ": " + level + " " + message.toString();
 		if (logFile == null)
 		{
-			System.out.println(formatted_msg);
+			System.out.println(formattedMsg);
 			return;
 		}
 
 		// if logFile is not null, it means that we have created a printWriter
-	    printWriter.println(formatted_msg);
+	    printWriter.println(formattedMsg);
 	    printWriter.flush();
 	}
 
