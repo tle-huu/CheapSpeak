@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.Random;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -190,7 +191,14 @@ public class PanelConnect extends JPanel implements ThemeUI
 	
 	private JButton connectButton_;
 	
-	private final String DEFAULT_PSEUDO = "Anonymous";
+	private final String[] ANIMALS = {"Squirrel", "Wolverine", "Magpie", "Carp", "Swordfish", "Emu", "Swallow", 
+			"Koala", "Rattlesnake", "Ostrich", "Grasshopper", "Owl", "Buffalo", "Toad", "Camel", "Fox", "Teddybear", 
+			"Wolf", "Kitten", "Doggie", "Badger", "Beaver", "Mammoth", "Bigfoot", "Chameleon", "Dragonfly", 
+			"Pheasant", "Cougar", "Starfish", "Sea lion", "Seal", "Dinosaur", "Kingfisher", "Zebra", "Human"};
+	
+	private final Random rand = new Random();
+	
+	private final String DEFAULT_PSEUDO = "Anonymous " + ANIMALS[rand.nextInt(ANIMALS.length)];
 	private final String DEFAULT_IP_ADDRESS = "127.0.0.1";
 	private final String DEFAULT_PORT = "4242";
 	
