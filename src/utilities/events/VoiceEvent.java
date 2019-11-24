@@ -4,7 +4,10 @@ import java.util.UUID;
 
 import utilities.SoundPacket;
 
-// Voice packet message
+/*
+ * A voice packet message
+ * 
+ */
 @SuppressWarnings("serial")
 public class VoiceEvent extends Event
 {

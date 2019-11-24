@@ -9,9 +9,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.HashMap;
 import java.util.Random;
-import java.util.UUID;
 
 import utilities.events.Event;
 import utilities.events.HandshakeEvent;
@@ -44,28 +42,27 @@ public class Client
         host_ = host;
         port_ = port;
 
-        try
-        {
-            socket_ = new Socket(InetAddress.getByName(host), port);
-            input_stream_ = new ObjectInputStream(socket_.getInputStream());
-            output_stream_ = new ObjectOutputStream(socket_.getOutputStream());
-            Log.LOG(Log.Level.INFO, "Connected to " + host + " on port " + port);
-        }
-        catch (UnknownHostException e)
-        {
-        	e.printStackTrace();
-        	throw e;
-        }
-        catch (IOException e)
-        {
-            Log.LOG(Log.Level.ERROR, "Error instanciating Client: "  + e.getMessage());
-            throw e;
-        }
+        socket_ = new Socket(InetAddress.getByName(host), port);
+        inputStream_ = new ObjectInputStream(socket_.getInputStream());
+        outputStream_ = new ObjectOutputStream(socket_.getOutputStream());
+        Log.LOG(Log.Level.INFO, "Connected to " + host + " on port " + port);
     }
 
-    public ConnectState connect(final String user_name)
+    public ConnectState connect(final String userName)
     {
-       return handshake(user_name);
+       return handshake(userName);
+    }
+    
+    public boolean alive()
+    {
+    	try (Socket socket = new Socket(host_, port_))
+    	{
+    		return true;
+        }
+    	catch (Exception e)
+    	{
+    		return false;
+        }
     }
 
     public void disconnect()
@@ -75,19 +72,19 @@ public class Client
 
     public void start()
     {
-        start_listening();
+        startListening();
     }
 
     public Event getEvent()
     {
-        return event_queue_.pop();
+        return eventQueue_.pop();
     }
 
-    public void send_event(Event event)
+    public void sendEvent(Event event)
     {
         try
         {
-            output_stream_.writeObject((Event) event);
+            outputStream_.writeObject((Event) event);
         }
         catch (IOException e)
         {
@@ -97,66 +94,39 @@ public class Client
 
 // PRIVATE METHODS
 
-    private void start_listening()
+    private void startListening()
     {
-        try
-        {
-            Thread thread = new Thread(new Runnable()
-            	{
-	                @Override
-	                public void run(){
-	                    try
-	                    {
-	                        Log.LOG(Log.Level.INFO, "Listening thread is running");
+        Thread thread = new Thread(new Runnable()
+        	{
+                @Override
+                public void run()
+                {
+                    while (running_.get() && alive())
+                    {
+                    	Event event = read();
 
-                            running_.set(true);
+                        if (event == null)
+                        {
+                            Log.LOG(Log.Level.WARNING, "Cannot read new event in listening loop");
+                            continue;
+                        }
 
-	                        while (running_.get())
-	                        {
-	                            try
-	                            {
-	                                Event event = read();
-	
-	                                if (event == null)
-	                                {
-	                                    Log.LOG(Log.Level.WARNING, "Couldnt read new event in listening loop");
-	                                    continue;
-	                                }
-	
-	                                boolean res = event_queue_.push(event);
-	
-	                                if (res == false)
-	                                {
-	                                    Log.LOG(Log.Level.ERROR, "Could not push into event queue");
-	                                }
-	                            }
-	                            catch (Exception e)
-	                            {
-	                                Log.LOG(Log.Level.ERROR, "Client listening thread error in while loop: " + e);
-	                                break;
-	                            }
-	                        }
-	
-	                    }
-	                    catch (Exception e)
-	                    {
-	                        Log.LOG(Log.Level.ERROR, " Client listening thread global error" + e);
-	                        e.printStackTrace();
-	                    }
-	                    finally
-	                    {
-	                        Log.LOG(Log.Level.INFO, "Client listening thread shutting down");
-	                    }
-	                }
-	            }
-            );
-            
-            thread.start();
-        }
-        catch (Exception e)
-        {
-            Log.LOG(Log.Level.ERROR, "Error in starting listening thread: " + e);
-        }
+                        boolean isPushed = eventQueue_.push(event);
+
+                        if (!isPushed)
+                        {
+                            Log.LOG(Log.Level.ERROR, "Cannot push event into event queue");
+                        }
+                    }
+                }
+            }
+        );
+        
+        running_.set(true);
+        
+        thread.start();
+        
+        Log.LOG(Log.Level.INFO, "Listening thread is running");
     }
 
     private Event read()
@@ -165,22 +135,22 @@ public class Client
 
         try
         {
-            event = (Event) input_stream_.readObject();
+            event = (Event) inputStream_.readObject();
         }
         catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "Client error in read: " + e);
+            Log.LOG(Log.Level.ERROR, "Client error in read: " + e.getMessage());
         }
         catch (ClassNotFoundException e)
         {
-            Log.LOG(Log.Level.INFO, "Client read a Non-Event Object: " + e);
-            e.printStackTrace();
+            Log.LOG(Log.Level.WARNING, "Client read a Non-Event Object: " + e.getMessage());
         }
 
         return event;
     }
 
-    private Event read_noblock()
+    @SuppressWarnings("unused")
+	private Event readNoblock()
     {
         Event event = null;
 
@@ -188,7 +158,7 @@ public class Client
         {
             if (socket_.getInputStream().available() > 0)
             {
-                event = (Event) input_stream_.readObject();
+                event = (Event) inputStream_.readObject();
             }
             else
             {
@@ -197,11 +167,11 @@ public class Client
         }
         catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "Client error in read: " + e);
+            Log.LOG(Log.Level.ERROR, "Client error in read: " + e.getMessage());
         }
         catch (ClassNotFoundException e)
         {
-            Log.LOG(Log.Level.INFO, "Client read a Non-Event Object: " + e);
+            Log.LOG(Log.Level.INFO, "Client read a Non-Event Object: " + e.getMessage());
         }
 
         return event;
@@ -212,14 +182,14 @@ public class Client
     {
         HandshakeEvent event = null;
 
-        int try_counter = 0;
-        while (event == null && try_counter <= 5)
+        int tryCounter = 0;
+        while (event == null && tryCounter <= 5)
         {
             event = (HandshakeEvent) read();
-            ++try_counter;
+            ++tryCounter;
         }
         
-        if (try_counter == 5)
+        if (tryCounter == 5)
         {
             Log.LOG(Log.Level.ERROR, "Handshake failed: could not get first HandshakeEvent");
             return ConnectState.BYE;
@@ -236,22 +206,22 @@ public class Client
         }
 
         // Setting the name and the state to set and sending the event to the server
-        int magic_word = new Random().ints(0, 42133742).findFirst().getAsInt();
+        int magicWord = new Random().ints(0, 42133742).findFirst().getAsInt();
 
         event.userName(name);
-        event.magicWord(magic_word);
+        event.magicWord(magicWord);
         event.state(HandshakeEvent.State.NAMESET);
         
-        send_event(event);
+        sendEvent(event);
         event = null;
         
-        while (event == null && try_counter <= 5)
+        while (event == null && tryCounter <= 5)
         {
             event = (HandshakeEvent) read();
-            ++try_counter;
+            ++tryCounter;
         }
         
-        if (try_counter == 5)
+        if (tryCounter == 5)
         {
             Log.LOG(Log.Level.ERROR, "Handshake failed: could not get second HandshakeEvent");
             return ConnectState.BYE;
@@ -275,15 +245,15 @@ public class Client
         }
 
         // Check the magic word
-        if (event.magicWord() != magic_word)
+        if (event.magicWord() != magicWord)
         {
             Log.LOG(Log.Level.ERROR, "Handshake failed: magic word has been changed");
             return ConnectState.BYE;
         }
 
-        if (try_counter != 2)
+        if (tryCounter != 2)
         {
-            Log.LOG(Log.Level.WARNING, "Handshake did not receive a HandshakeEvent at first: {" + Integer.toString(try_counter) + "}");
+            Log.LOG(Log.Level.WARNING, "Handshake did not receive a HandshakeEvent at first: {" + Integer.toString(tryCounter) + "}");
         }
 
         // Starting listening thread
@@ -291,7 +261,7 @@ public class Client
 
         // Notifying server that we are ready to listen for incoming events
         event.state(HandshakeEvent.State.LISTENING);
-        send_event(event);
+        sendEvent(event);
 
         return ConnectState.OK;
     }
@@ -300,26 +270,25 @@ public class Client
     {
         try
         {
-            output_stream_.close();
+            outputStream_.close();
             socket_.close();
         }
         catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "Error closing socket: " + e);
+            Log.LOG(Log.Level.ERROR, "Error closing socket: " + e.getMessage());
             return false;
         }
         finally
         {
             running_.set(false);
         }
+        
         return true;
     }
 
 // PRIVATE ATTRIBUTES
 
-    private FixedVector<Event> event_queue_ = new FixedVector<Event>();
-
-    private HashMap<UUID, AudioChannel> audio_channels_ = new HashMap<UUID, AudioChannel>();
+    private FixedVector<Event> eventQueue_ = new FixedVector<Event>();
 
     // Private Attributes
     private String host_;
@@ -330,9 +299,9 @@ public class Client
     private AtomicBoolean running_ = new AtomicBoolean(false);
 
 	// Input Stream
-	private ObjectInputStream input_stream_ ;
+	private ObjectInputStream inputStream_ ;
 
 	// Output Stream
-	private ObjectOutputStream output_stream_;
+	private ObjectOutputStream outputStream_;
 
 }

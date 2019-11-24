@@ -82,7 +82,7 @@ public class VocalServer
 
 
 
-	            if (((ThreadPoolExecutor)executor_).getActiveCount() < THREADS_NUMBER)
+	            if (((ThreadPoolExecutor) executor_).getActiveCount() < THREADS_NUMBER)
 	            {
 		            Log.LOG(Log.Level.INFO, "Using fixed thread pool thread: " + ((ThreadPoolExecutor)executor_).getActiveCount() + " < " + THREADS_NUMBER + "]");
 		            executor_.execute(new_connection_client);
@@ -117,7 +117,7 @@ public class VocalServer
 	}
 
 // Exposed interface for server side objects (mainly used by the ConnetionClients)
-	public boolean add_to_broadcast(Event event)
+	public boolean add_to_broadcast(final Event event)
 	{
 		return broadcast_queue_.push(event);
 	}

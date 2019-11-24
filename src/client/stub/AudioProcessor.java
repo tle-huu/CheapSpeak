@@ -173,7 +173,7 @@ public class AudioProcessor
                             }
 
                             VoiceEvent voiceEvent = new VoiceEvent(null, userName_, soundPacket);
-                            client_.send_event(voiceEvent);
+                            client_.sendEvent(voiceEvent);
                         }
 
                         // Pause the thread

@@ -2,6 +2,10 @@ package utilities.events;
 
 import java.util.UUID;
 
+/*
+ * A user enters in a room
+ * 
+ */
 @SuppressWarnings("serial")
 public class EnterRoomEvent extends Event
 {

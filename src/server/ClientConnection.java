@@ -59,7 +59,7 @@ public class ClientConnection implements Runnable, EventEngine
             return ;
         }
 
-        // notify others
+        // Notify others
         {
             ConnectionEvent my_connection_event = new ConnectionEvent(uuid_, user_name_);
             broadcast(my_connection_event);
@@ -188,8 +188,6 @@ public class ClientConnection implements Runnable, EventEngine
     @Override
     public boolean handleText(TextEvent event)
     {
-        ServerRoom current_room = vocal_server_.rooms().get(currentRoom_);
-
         broadcast(event);
         return true;
     }
@@ -273,14 +271,12 @@ public class ClientConnection implements Runnable, EventEngine
 
     private void broadcast(final Event event)
     {
-        try
+        event.uuid(uuid_);
+        
+        boolean isBroadcasted = vocal_server_.add_to_broadcast(event);
+        if (!isBroadcasted)
         {
-            event.uuid(uuid_);
-            boolean res = vocal_server_.add_to_broadcast(event);
-        }
-        catch (Exception e)
-        {
-            Log.LOG(Log.Level.ERROR, "ClientConnection broadcast error: " + e.getMessage());
+            Log.LOG(Log.Level.ERROR, "ClientConnection broadcast error");
         }
     }
 
@@ -291,7 +287,7 @@ public class ClientConnection implements Runnable, EventEngine
         // Send empty shell of HandshakeEvent to be filled by client
         boolean res = send(event);
 
-        if (res == false)
+        if (!res)
         {
             Log.LOG(Log.Level.ERROR, "Error in handshake to send first handshake event shell");
             return false;
@@ -348,7 +344,7 @@ public class ClientConnection implements Runnable, EventEngine
         Vector<ServerRoom> rooms = vocal_server_.rooms_vector();
         for (ServerRoom room : rooms)
         {
-            if (room.name().equals("Lobby"))
+            if (room.name().equals(DEFAULT_ROOM_NAME))
             {
                 continue ;
             }
@@ -382,17 +378,20 @@ public class ClientConnection implements Runnable, EventEngine
     // Name gotten from handshake
     private String user_name_;
 
+    // Default room name
+    private final String DEFAULT_ROOM_NAME = "Lobby";
+    
     // Current room
-    private String currentRoom_ = "Lobby";
+    private String currentRoom_ = DEFAULT_ROOM_NAME;
 
     // socket connection to the client
-    final private Socket socket_;
+    private final Socket socket_;
 
     // Reference to the server
-    final private VocalServer vocal_server_;
+    private final VocalServer vocal_server_;
 
     // Unique uuid
-    final private UUID uuid_;
+    private final UUID uuid_;
 
     // Input Stream
     private ObjectInputStream input_stream_ ;

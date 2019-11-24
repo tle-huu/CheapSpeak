@@ -2,7 +2,10 @@ package utilities.events;
 
 import java.util.UUID;
 
-// Text message
+/*
+ * A text message
+ * 
+ */
 @SuppressWarnings("serial")
 public class TextEvent extends Event
 {

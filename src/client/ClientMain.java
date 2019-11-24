@@ -13,6 +13,7 @@ public class ClientMain
 		// Setting logger
         Log.id(Log.CLIENT_ID);
 
+        // Launch the app
 		new SplashScreen();
 	}
 	

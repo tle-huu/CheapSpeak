@@ -2,6 +2,10 @@ package utilities.events;
 
 import java.util.UUID;
 
+/*
+ * A new room is created by the server
+ * 
+ */
 @SuppressWarnings("serial")
 public class NewRoomEvent extends Event
 {

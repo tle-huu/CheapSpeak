@@ -2,7 +2,10 @@ package utilities.events;
 
 import java.util.UUID;
 
-// A new user is connected
+/*
+ * A new user is connected
+ * 
+ */
 @SuppressWarnings("serial")
 public class ConnectionEvent extends Event
 {

@@ -19,13 +19,13 @@ public class FixedVector<T>
 
     public T pop()
     {
-        if (is_empty())
+        if (isEmpty())
         {
             return null;
         }
-        T first_elem = buffer_.firstElement();
+        T firstElem = buffer_.firstElement();
         buffer_.remove(0);
-        return first_elem;
+        return firstElem;
     }
 
     public int size()
@@ -33,7 +33,7 @@ public class FixedVector<T>
         return buffer_.size();
     }
 
-    public boolean is_empty()
+    public boolean isEmpty()
     {
         return buffer_.isEmpty();
     }

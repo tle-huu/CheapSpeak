@@ -1,6 +1,5 @@
 package utilities.infra;
 
-import java.io.Writer;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
@@ -30,7 +29,7 @@ public class Log
 		
 	// PRIVATE CONSTRUCTOR
 		
-		private Level(String prefix)
+		private Level(final String prefix)
 		{
 			prefix_ = prefix;
 		}
@@ -51,7 +50,7 @@ public class Log
 
 // PUBLIC METHOD
 	
-	public static void LOG(Level level, Object message)
+	public static void LOG(final Level level, final Object message)
 	{
 		String formattedMsg = new Timestamp(new Date().getTime()).toString() + ": " + level + " " + message.toString();
 		if (logFile == null)
@@ -65,7 +64,7 @@ public class Log
 	    printWriter.flush();
 	}
 
-	public static void id(int id)
+	public static void id(final int id)
 	{
 		if (printWriter != null)
 		{
@@ -77,12 +76,15 @@ public class Log
 			case SERVER_ID:
 				logFile = LOG_FILE_SERVER;
 				break;
+			
 			case CLIENT_ID:
 				logFile = LOG_FILE_CLIENT;
 				break;
+			
 			case STD_OUT_ID:
 				logFile = null;
 				break;
+			
 			default:
 				logFile = DEFAUT_LOG_FILE;
 		}
@@ -99,19 +101,18 @@ public class Log
 		}
 		catch (IOException e)
 		{
-			System.out.println("Logger internal fatal error: " + e);
+			System.out.println("Logger internal fatal error: " + e.getMessage());
 
 			// Still printing in standard output
 			logFile = null;
 		}
-
 	}
 
 // PUBLIC CONST
 
-	static public final int SERVER_ID = 0;
-	static public final int CLIENT_ID = 1;
-	static public final int STD_OUT_ID = 2;
+	public final static int SERVER_ID = 0;
+	public final static int CLIENT_ID = 1;
+	public final static int STD_OUT_ID = 2;
 
 // PRIVATE
 
@@ -121,9 +122,8 @@ public class Log
 
 	static private String logFile = null;
 
-
-	static private File file = null;
-	static private FileWriter fileWriter = null;
+	static private File        file = null;
+	static private FileWriter  fileWriter = null;
 	static private PrintWriter printWriter = null;
 
 }

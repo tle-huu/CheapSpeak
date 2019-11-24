@@ -1,7 +1,5 @@
 package server;
 
-import utilities.events.TextEvent;
-
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.Vector;

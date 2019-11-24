@@ -7,7 +7,10 @@ import utilities.infra.Log;
 
 public class ServerMain
 {
-    public static void main(String[] argv)
+    
+// MAIN
+	
+	public static void main(String[] argv)
     {
         // Setting logger
         Log.id(Log.SERVER_ID);
@@ -20,13 +23,13 @@ public class ServerMain
             if (port < MIN_PORT || port > MAX_PORT)
             {
                 Log.LOG(Log.Level.FATAL, "The port " + port + " is not supported");
-                return ;
+                return;
             }
         }
         else if (argv.length > 1)
         {
             Log.LOG(Log.Level.FATAL, "Illegal number of arguments: 0 or 1 argument supported");
-            return ;
+            return;
         }
 
         // Create the server
@@ -35,16 +38,15 @@ public class ServerMain
         {
             server = new VocalServer(port);
         }
+        catch (IOException e)
+        {
+        	Log.LOG(Log.Level.FATAL, "The server cannot be created");
+        	return;
+        }
         catch (Exception e)
         {
-            Log.LOG(Log.Level.FATAL, "The server cannot be created");
-            return ;
-        }
-
-        if (server == null)
-        {
-            Log.LOG(Log.Level.FATAL, "The server could not be created");
-            return ;
+            Log.LOG(Log.Level.FATAL, e.getMessage());
+            return;
         }
 
         // Start the server
@@ -55,10 +57,12 @@ public class ServerMain
         catch (IOException e)
         {
             Log.LOG(Log.Level.FATAL, "The server cannot start");
-            return ;
+            return;
         }
     }
     
+// PRIVATE CONST
+	
     private static final int DEFAULT_PORT = 4242;
     private static final int MIN_PORT = 1025;
     private static final int MAX_PORT = 65535;

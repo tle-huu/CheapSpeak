@@ -2,6 +2,10 @@ package utilities.events;
 
 import java.util.UUID;
 
+/*
+ * A room is removed
+ * 
+ */
 @SuppressWarnings("serial")
 public class RemoveRoomEvent extends Event
 {

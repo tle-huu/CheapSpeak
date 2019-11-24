@@ -1,12 +1,5 @@
 package utilities.events;
 
-import utilities.events.ConnectionEvent;
-import utilities.events.DisconnectionEvent;
-import utilities.events.Event;
-import utilities.events.NewRoomEvent;
-import utilities.events.RemoveRoomEvent;
-import utilities.events.TextEvent;
-import utilities.events.VoiceEvent;
 import utilities.infra.Log;
 
 public interface EventEngine
@@ -14,7 +7,7 @@ public interface EventEngine
 
 // DEFAULT METHOD
 
-	default boolean handleEvent(Event event)
+	default boolean handleEvent(final Event event)
 	{
 		if (event == null)
 		{
@@ -52,18 +45,18 @@ public interface EventEngine
 
 // ABSTRACT METHODS
 		
-	public boolean handleConnection(ConnectionEvent event);
+	public boolean handleConnection(final ConnectionEvent event);
 
-	public boolean handleDisconnection(DisconnectionEvent event);
+	public boolean handleDisconnection(final DisconnectionEvent event);
 
-	public boolean handleEnterRoom(EnterRoomEvent event);
+	public boolean handleEnterRoom(final EnterRoomEvent event);
 
-	public boolean handleNewRoom(NewRoomEvent event);
+	public boolean handleNewRoom(final NewRoomEvent event);
 
-	public boolean handleRemoveRoom(RemoveRoomEvent event);
+	public boolean handleRemoveRoom(final RemoveRoomEvent event);
 
-	public boolean handleText(TextEvent event);
+	public boolean handleText(final TextEvent event);
 
-	public boolean handleVoice(VoiceEvent event);
+	public boolean handleVoice(final VoiceEvent event);
 
 }

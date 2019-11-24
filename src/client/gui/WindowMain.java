@@ -210,7 +210,10 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			panelMain_.resetChat();
 			
 			// Unmute the audio processor
-			audioProcessor_.unmute();
+			if (!isMuted_)
+			{
+				audioProcessor_.unmute();
+			}
 		}
 		
 		return true;
@@ -266,14 +269,18 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	
 	private void disconnect()
 	{
-		Log.LOG(Log.Level.INFO, "Disconnected");
+		// Stop listening to the server
+		listening_.set(false);
 		
 		// Send the disconnection message to the server
 		if (client_ != null)
 		{
 			// Send the disconnection message to the server
-			Event event = new DisconnectionEvent(null, pseudo_);
-			client_.send_event(event);
+			if (client_.alive())
+			{
+				Event event = new DisconnectionEvent(null, pseudo_);
+				client_.sendEvent(event);
+			}
 			
 			// End the connection
 			client_.disconnect();
@@ -282,13 +289,25 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			client_ = null;
 		}
 		
+		// Stop the audio processor
+		audioProcessor_.shutdown();
+		audioProcessor_ = null;
+		
 		// Reset the rooms
 		rooms_ = new ArrayList<Room>();
 		defaultRoom_.clear();
 		rooms_.add(defaultRoom_);
 		
-		// Stop listening to the server
-		listening_.set(false);
+		// Switch to the connection panel
+		panelMain_ = null;
+		this.setContentPane(panelConnect_);
+		this.revalidate();
+		
+		// Reset the connect/disconnect buttons
+		menuBar_.connect().setEnabled(true);
+		menuBar_.disconnect().setEnabled(false);
+		
+		Log.LOG(Log.Level.INFO, "Disconnected");
 	}
 	
 	private void exit()
@@ -372,7 +391,35 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		// Display a message to inform the user he cannot connect with this pseudo
 		JOptionPane.showMessageDialog(null, 
 				textDialog + "\nPlease try with another pseudo :)", 
-				"You cannot connect with this pseudo", 
+				"Wrong pseudo", 
+				JOptionPane.WARNING_MESSAGE);
+	}
+	
+	private void showWrongPortDialog()
+	{
+		// Display a message to inform the user he used a wrong pseudo
+		JOptionPane.showMessageDialog(null, 
+				"The port must be greater than " + MIN_PORT + " and lower than " + MAX_PORT + "."
+						+ "\nPlease try with another port :)", 
+				"Wrong port", 
+				JOptionPane.WARNING_MESSAGE);
+	}
+	
+	private void showUnknownHostDialog(String host)
+	{
+		// Display a message to inform the user he used a wrong pseudo
+		JOptionPane.showMessageDialog(null, 
+				"The host " + host + " is unknown." + "\nPlease try with another ip address :)", 
+				"Unknown host", 
+				JOptionPane.WARNING_MESSAGE);
+	}
+	
+	private void showNoServerDialog()
+	{
+		// Display a message to inform the user he used a wrong pseudo
+		JOptionPane.showMessageDialog(null, 
+				"The client cannot connect to the server." + "\nPlease try to reconnect :)", 
+				"No server", 
 				JOptionPane.WARNING_MESSAGE);
 	}
 	
@@ -381,7 +428,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		// Display a message to inform the user he cannot use his microphone
 		JOptionPane.showMessageDialog(null, 
 				"The microphone cannot be used." + "\nPlease try to reconnect :)", 
-				"There is an error with the microphone", 
+				"No microphone", 
 				JOptionPane.WARNING_MESSAGE);
 	}
 	
@@ -396,8 +443,10 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			
 			// Start listening to the server
 			Log.LOG(Log.Level.INFO, "Start listening");
+			
 			listening_.set(true);
-			while (listening_.get() && client_ != null)
+			
+			while (listening_.get() && client_ != null && client_.alive())
 			{
 				// Get an event
 				Event event = client_.getEvent();
@@ -405,17 +454,18 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				// Handle the event
 				if (event != null)
 				{
-					boolean hasWorked = handleEvent(event);
-					if (!hasWorked)
+					boolean isHandled = handleEvent(event);
+					if (!isHandled)
 					{
 						Log.LOG(Log.Level.ERROR, "This event (type " + event.type() + ") didn't work: " + event.uuid());
 					}
 				}
 			}
 			
-			// Stop listening to the server
-			listening_.set(false);
 			Log.LOG(Log.Level.INFO, "Stop listening");
+			
+			// Disconnect the client from the server
+			disconnect();
 		}
 	}
 
@@ -458,22 +508,23 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			// Check if the pseudo is correct
 			if (pseudo.isEmpty())
 			{
-				Log.LOG(Log.Level.WARNING, "The pseudo is empty");
+				Log.LOG(Log.Level.ERROR, "The pseudo is empty");
 				showChangePseudoDialog("Your pseudo cannot be empty.");
-				return ;
+				return;
 			}
 			else if (pseudo.length() > PSEUDO_MAX_LENGTH)
 			{
-				Log.LOG(Log.Level.WARNING, "The pseudo " + pseudo + " is too long");
+				Log.LOG(Log.Level.ERROR, "The pseudo " + pseudo + " is too long");
 				showChangePseudoDialog("Your pseudo must have less than " + PSEUDO_MAX_LENGTH + " characters.");
-				return ;
+				return;
 			}
 			
 			// Check if the port is correct
 			if (port < MIN_PORT || port > MAX_PORT)
 			{
 				Log.LOG(Log.Level.ERROR, "The port " + port + " is not supported");
-				return ;
+				showWrongPortDialog();
+				return;
 			}
 			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
 			
@@ -508,10 +559,12 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			catch (UnknownHostException e1)
 	        {
 	            Log.LOG(Log.Level.ERROR, "The host " + host + " is unknown");
+	            showUnknownHostDialog(host);
 	        }
 	        catch (IOException e1)
 	        {
-	        	Log.LOG(Log.Level.ERROR, "The client cannot be created");
+	        	Log.LOG(Log.Level.FATAL, "The client cannot be created");
+	        	showNoServerDialog();
 	        }
 			Log.LOG(Log.Level.INFO, "Port used by the client: " + port);
 			
@@ -551,21 +604,8 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			// Disconnect from the server
-			disconnect();
-			
-			// Switch to the connection panel
-			panelMain_ = null;
-			setContentPane(panelConnect_);
-			revalidate();
-			
-			// Stop the audio processor
-			audioProcessor_.shutdown();
-			audioProcessor_ = null;
-			
-			// Reset the connect/disconnect buttons
-			menuBar_.connect().setEnabled(true);
-			menuBar_.disconnect().setEnabled(false);
+			// Stop listening to the server
+			listening_.set(false);
 		}
 	}
 	
@@ -577,7 +617,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			// Break if the user is not in a room
 			if (currentRoom_ == null)
 			{
-				return ;
+				return;
 			}
 			
 			// Get the chat panel
@@ -597,7 +637,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 			if (client_ != null)
 			{
 				Event event = new TextEvent(null, pseudo_, textMessage);
-				client_.send_event(event);
+				client_.sendEvent(event);
 			}
 		}
 	}
@@ -636,7 +676,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 		        			if (client_ != null)
 							{
 								Event event = new EnterRoomEvent(null, pseudo_, roomName);
-								client_.send_event(event);
+								client_.sendEvent(event);
 							}
 		        		}
 		        	}
@@ -783,7 +823,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				String pseudo = (String) ((DefaultMutableTreeNode) value).getUserObject();
 				
 				// Client node
-				if (audioProcessor_.isTalking(pseudo))
+				if (audioProcessor_ != null && audioProcessor_.isTalking(pseudo))
 				{
 					this.setIcon(UIManager.getIconResource("SPEAKER_ICON"));
 				}
@@ -833,7 +873,7 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 	private final int     DEFAULT_HEIGHT = 720;
 	private final String  WINDOW_NAME = "CheapSpeak";
 	private final String  DEFAULT_ROOM_NAME = "Lobby";
-	private final boolean NO_CONNECTION_MODE = true;
+	private final boolean NO_CONNECTION_MODE = false;
 	private final int     PSEUDO_MAX_LENGTH = 32;
 	private final int     MIN_PORT = 1025;
 	private final int     MAX_PORT = 65535;
