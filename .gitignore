@@ -2,6 +2,10 @@
 *.class
 bin
 
+# Eclipse files
+.classpath
+.project
+
 # Gradle files
 .gradle
 build
