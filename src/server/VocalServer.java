@@ -65,9 +65,7 @@ public class VocalServer
 
 		// Starting Broadcasting thread
 		Broadcaster broadcaster = new Broadcaster(this);
-		// broadcaster.start();
         executor_.execute(broadcaster);
-
 
 		// Starting main loop of accepting new connections
 		while (running_.get())
@@ -79,8 +77,6 @@ public class VocalServer
             {
 	            ClientConnection new_connection_client = new ClientConnection(this, new_client_socket);
 	            add_client(new_connection_client);
-
-
 
 	            if (((ThreadPoolExecutor) executor_).getActiveCount() < THREADS_NUMBER)
 	            {
