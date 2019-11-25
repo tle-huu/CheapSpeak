@@ -61,7 +61,7 @@ public class VocalServer
 
 		Log.LOG(Log.Level.INFO, "Starting Server");
 		// Setting running flag
-		running_ .set(true);
+		running_.set(true);
 
 		// Starting Broadcasting thread
 		Broadcaster broadcaster = new Broadcaster(this);
@@ -263,7 +263,7 @@ public class VocalServer
 	// Hash map to store client connections objects
 	private ConcurrentHashMap<UUID, ClientConnection> clients_ = new ConcurrentHashMap<UUID, ClientConnection>();
 
-	// Hash map to store client connections objects
+	// Hash map to store client rooms objects
 	private ConcurrentHashMap<String, ServerRoom> rooms_ = new ConcurrentHashMap<String, ServerRoom>();
 
 	// Shared ring buffer for broadcaster and client connections communication
