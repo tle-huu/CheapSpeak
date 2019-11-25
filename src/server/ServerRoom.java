@@ -12,36 +12,37 @@ public class ServerRoom
 
 // PUBLIC METHODS
 
-	public ServerRoom(final String name, final VocalServer vocal_server) throws Exception
+	// Constructor
+	public ServerRoom(final String name, final VocalServer vocalServer) throws Exception
 	{
 		name_ = name;
-		vocal_server_ = vocal_server;
+		vocalServer_ = vocalServer;
 
-		if (vocal_server == null)
+		if (vocalServer == null)
 		{
 			throw new Exception("Cannot instanciate room with null server reference");
 		}
 	}
 
 	// Return true if the set did not contain the given uuid
-	public boolean add_client(final UUID uuid)
+	public boolean addClient(final UUID uuid)
 	{
-		return client_uuids_set_.add(uuid);
+		return clientUuidsSet_.add(uuid);
 	}
 
 	// Return true if the set contained the given uuid
-	public boolean remove_client(final UUID uuid)
+	public boolean removeClient(final UUID uuid)
 	{
-		return client_uuids_set_.remove(uuid);
+		return clientUuidsSet_.remove(uuid);
 	}
 
 	public Vector<ClientConnection> clients()
 	{
 		Vector<ClientConnection> clients = new Vector<ClientConnection>();
 
-		for (UUID uuid : client_uuids_set_)
+		for (UUID uuid: clientUuidsSet_)
 		{
-			clients.add(vocal_server_.clients().get(uuid));
+			clients.add(vocalServer_.clients().get(uuid));
 		}
 		return clients;
 	}
@@ -65,12 +66,12 @@ public class ServerRoom
 
 // PRIVATE ATTRIBUTES
 
-	private TreeSet<UUID> client_uuids_set_ = new TreeSet<UUID>();
+	private TreeSet<UUID> clientUuidsSet_ = new TreeSet<UUID>();
 
-	final private String name_;
+	private final String name_;
 
-	final private VocalServer vocal_server_;
+	private final VocalServer vocalServer_;
 
-	final private UUID uuid_ = UUID.randomUUID();
+	private final UUID uuid_ = UUID.randomUUID();
 
 }

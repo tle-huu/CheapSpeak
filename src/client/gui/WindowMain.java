@@ -480,7 +480,8 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 					boolean isHandled = handleEvent(event);
 					if (!isHandled)
 					{
-						Log.LOG(Log.Level.ERROR, "This event (type " + event.type() + ") didn't work: " + event.uuid());
+						Log.LOG(Log.Level.ERROR, "This event (type " + event.type() + ") didn't work: "
+								+ event.uuid());
 					}
 				}
 			}
@@ -846,7 +847,8 @@ public class WindowMain extends JFrame implements EventEngine, ThemeUI
 				boolean isLeaf, int row, boolean focused)
 		{
 			// Get the tree cell renderer component
-			Component component = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
+			Component component = super.getTreeCellRendererComponent(tree, value, selected, 
+					expanded, isLeaf, row, focused);
 			
 			// Set the cell icon and font depending on whether the node is a room or a client
 			int level = ((DefaultMutableTreeNode) value).getLevel();

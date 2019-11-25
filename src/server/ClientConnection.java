@@ -21,23 +21,27 @@ import utilities.infra.Log;
 public class ClientConnection implements Runnable, EventEngine
 {
 
-// PUBLIC
-    public ClientConnection(VocalServer vocal_server, Socket socket) throws IOException
+// PUBLIC METHODS
+	
+	// Constructor
+    public ClientConnection(final VocalServer vocalServer, final Socket socket) throws IOException
     {
         socket_ = socket;
-        vocal_server_ = vocal_server;
+        vocalServer_ = vocalServer;
         uuid_ = UUID.randomUUID();
 
+        currentRoom_ = vocalServer_.defaultRoomName();
+        
         try
         {
-            output_stream_ = new ObjectOutputStream(socket_.getOutputStream());
-            input_stream_ = new ObjectInputStream(socket_.getInputStream());
+            outputStream_ = new ObjectOutputStream(socket_.getOutputStream());
+            inputStream_ = new ObjectInputStream(socket_.getInputStream());
         }
-        catch (IOException err)
+        catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "ClientConnection Construction error: " + err);
+            Log.LOG(Log.Level.ERROR, "ClientConnection Construction error: " + e.getMessage());
             close();
-            throw err;
+            throw e;
         }
 
         Log.LOG(Log.Level.INFO, "New ClientConnection: " + uuid_.toString());
@@ -51,22 +55,21 @@ public class ClientConnection implements Runnable, EventEngine
 
         boolean accepted = handshake();
 
-
-        if (accepted == false)
+        if (!accepted)
         {
             Log.LOG(Log.Level.ERROR, "Error while performing the handshake");
             close();
-            return ;
+            return;
         }
 
         // Notify others
         {
-            ConnectionEvent my_connection_event = new ConnectionEvent(uuid_, user_name_);
-            broadcast(my_connection_event);
+            ConnectionEvent myConnectionEvent = new ConnectionEvent(uuid_, userName_);
+            broadcast(myConnectionEvent);
         }
         try
         {
-            while (running_ && vocal_server_.running())
+            while (running_ && vocalServer_.running())
             {
                 try
                 {
@@ -76,24 +79,23 @@ public class ClientConnection implements Runnable, EventEngine
                         break;
                     }
 
-                    Event event = (Event) input_stream_.readObject();
+                    Event event = (Event) inputStream_.readObject();
 
                     // Setting emitter uuid
                     event.uuid(uuid_);
 
                     // Process the event
                     handleEvent(event);
-
                 }
                 catch (Exception e)
                 {
-                    Log.LOG(Log.Level.INFO, "CLientConnection [" + user_name_ + "] socket closed");
+                    Log.LOG(Log.Level.INFO, "CLientConnection [" + userName_ + "] socket closed");
+                    
                     // Sending to others that we disconnected due to a fatal error
-                    handleDisconnection(new DisconnectionEvent(uuid_, user_name_));
+                    handleDisconnection(new DisconnectionEvent(uuid_, userName_));
                     break;
                 }
             }
-
         }
         catch (Exception e)
         {
@@ -103,7 +105,6 @@ public class ClientConnection implements Runnable, EventEngine
         {
             close();
         }
-
     }
 
     // Exposed method to be used by the broadcaster thread
@@ -111,18 +112,19 @@ public class ClientConnection implements Runnable, EventEngine
     {
         try
         {
-            output_stream_.writeObject(event);
+            outputStream_.writeObject(event);
             return true;
         }
         catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "[ClientConnection] (" + user_name_ + ") Error in sending event of type " + event.type());
+            Log.LOG(Log.Level.ERROR, "[ClientConnection] (" + userName_
+            		+ ") Error in sending event of type " + event.type());
             return false;
         }
     }
 
     @Override
-    public boolean handleConnection(ConnectionEvent event)
+    public boolean handleConnection(final ConnectionEvent event)
     {
         Log.LOG(Log.Level.INFO, "handleConnection");
         broadcast(event);
@@ -131,7 +133,7 @@ public class ClientConnection implements Runnable, EventEngine
     }
 
     @Override
-    public boolean handleDisconnection(DisconnectionEvent event)
+    public boolean handleDisconnection(final DisconnectionEvent event)
     {
         Log.LOG(Log.Level.INFO, "handleDisconnectionEvent: " + event.userName() + " disconnected");
         close();
@@ -141,11 +143,11 @@ public class ClientConnection implements Runnable, EventEngine
     }
 
     @Override
-    public boolean handleEnterRoom(EnterRoomEvent event)
+    public boolean handleEnterRoom(final EnterRoomEvent event)
     {
 
         // Updating the rooms
-        boolean res = vocal_server_.update_room(uuid_, currentRoom_, event.roomName());
+        boolean res = vocalServer_.updateRoom(uuid_, currentRoom_, event.roomName());
         if (res == false)
         {
             Log.LOG(Log.Level.ERROR, "HandleEnterRoom error: could not update rooms");
@@ -161,7 +163,7 @@ public class ClientConnection implements Runnable, EventEngine
     }
 
     @Override
-    public boolean handleNewRoom(NewRoomEvent event)
+    public boolean handleNewRoom(final NewRoomEvent event)
     {
         Log.LOG(Log.Level.INFO, "HandleNewRoom triggered");
         broadcast(event);
@@ -170,7 +172,7 @@ public class ClientConnection implements Runnable, EventEngine
     }
 
     @Override
-    public boolean handleRemoveRoom(RemoveRoomEvent event)
+    public boolean handleRemoveRoom(final RemoveRoomEvent event)
     {
         Log.LOG(Log.Level.INFO, "HandleNewRoom triggered");
         broadcast(event);
@@ -179,14 +181,14 @@ public class ClientConnection implements Runnable, EventEngine
     }
 
     @Override
-    public boolean handleVoice(VoiceEvent event)
+    public boolean handleVoice(final VoiceEvent event)
     {
         broadcast(event);
         return true;
     }
 
     @Override
-    public boolean handleText(TextEvent event)
+    public boolean handleText(final TextEvent event)
     {
         broadcast(event);
         return true;
@@ -217,37 +219,37 @@ public class ClientConnection implements Runnable, EventEngine
         return currentRoom_;
     }
 
-    public String user_name()
+    public String userName()
     {
-        return user_name_;
+        return userName_;
     }
 
     public void close()
     {
         if (!running_)
         {
-            return ;
+            return;
         }
 
         try 
         {
-            input_stream_.close();
-            output_stream_.close();
+            inputStream_.close();
+            outputStream_.close();
             socket_.close();
-
         }
         catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "Error closing ClientConnection [" + uuid_.toString() + "]: " + e.getMessage());
+            Log.LOG(Log.Level.ERROR, "Error closing ClientConnection [" + uuid_.toString()
+            		+ "]: " + e.getMessage());
         }
         finally
         {
-            vocal_server_.remove_client(uuid_);
+            vocalServer_.removeClient(uuid_);
             running_ = false;
         }
     }
 
-// PRIVATE
+// PRIVATE METHODS
 
     private Event read()
     {
@@ -255,15 +257,15 @@ public class ClientConnection implements Runnable, EventEngine
 
         try
         {
-            event = (Event) input_stream_.readObject();
+            event = (Event) inputStream_.readObject();
         }
         catch (IOException e)
         {
-            Log.LOG(Log.Level.ERROR, "Error in read: " + e);
+            Log.LOG(Log.Level.ERROR, "Error in read: " + e.getMessage());
         }
         catch (ClassNotFoundException e)
         {
-            Log.LOG(Log.Level.INFO, "Read a Non-Event Object: " + e);
+            Log.LOG(Log.Level.INFO, "Read a Non-Event Object: " + e.getMessage());
         }
 
         return event;
@@ -273,7 +275,7 @@ public class ClientConnection implements Runnable, EventEngine
     {
         event.uuid(uuid_);
         
-        boolean isBroadcasted = vocal_server_.add_to_broadcast(event);
+        boolean isBroadcasted = vocalServer_.addToBroadcast(event);
         if (!isBroadcasted)
         {
             Log.LOG(Log.Level.ERROR, "ClientConnection broadcast error");
@@ -312,7 +314,7 @@ public class ClientConnection implements Runnable, EventEngine
             event.state(HandshakeEvent.State.OK);
         }
 
-        if (vocal_server_.is_present(uuid_, event.userName()))
+        if (vocalServer_.isPresent(uuid_, event.userName()))
         {
             // Setting Closing state and stoping handshake
             event.state(HandshakeEvent.State.OTHERNAME);
@@ -321,7 +323,7 @@ public class ClientConnection implements Runnable, EventEngine
         }
 
         // Setting userName;
-        user_name_ = event.userName();
+        userName_ = event.userName();
         res = send(event);
 
         // Read Client answer
@@ -329,7 +331,7 @@ public class ClientConnection implements Runnable, EventEngine
 
         if (event.state() == HandshakeEvent.State.LISTENING)
         {
-            send_server_current_status();
+            sendServerCurrentStatus();
         }
         else
         {
@@ -339,32 +341,32 @@ public class ClientConnection implements Runnable, EventEngine
         return res;
     }
 
-    private boolean send_server_current_status()
+    private boolean sendServerCurrentStatus()
     {
-        Vector<ServerRoom> rooms = vocal_server_.rooms_vector();
-        for (ServerRoom room : rooms)
+        Vector<ServerRoom> rooms = vocalServer_.roomsVector();
+        for (ServerRoom room: rooms)
         {
-            if (room.name().equals(DEFAULT_ROOM_NAME))
-            {
-                continue ;
-            }
-            NewRoomEvent new_room_event = new NewRoomEvent(null, room.name());
-            send(new_room_event);
-        }
-
-        for (ClientConnection client_conn : vocal_server_.clients().values())
-        {
-            if (client_conn == this)
+            if (room.name().equals(vocalServer_.defaultRoomName()))
             {
                 continue;
             }
-            EnterRoomEvent connection_event = new EnterRoomEvent(uuid_, client_conn.user_name(), client_conn.currentRoom());
-            send(connection_event);
+            NewRoomEvent newRoomEvent = new NewRoomEvent(null, room.name());
+            send(newRoomEvent);
+        }
+
+        for (ClientConnection clientConn: vocalServer_.clients().values())
+        {
+            if (clientConn == this)
+            {
+                continue;
+            }
+            EnterRoomEvent connectionEvent = new EnterRoomEvent(uuid_, clientConn.userName(), clientConn.currentRoom());
+            send(connectionEvent);
         }
 
         // Updating Lobby
-        boolean res = vocal_server_.update_room(uuid_, null, currentRoom_);
-        if (res == false)
+        boolean res = vocalServer_.updateRoom(uuid_, null, currentRoom_);
+        if (!res)
         {
             Log.LOG(Log.Level.ERROR, "send server current status: error: could not update lobby room");
             return false;
@@ -373,31 +375,28 @@ public class ClientConnection implements Runnable, EventEngine
         return true;
     }
 
-// PRIVATE
+// PRIVATE ATTRIBUTES
 
     // Name gotten from handshake
-    private String user_name_;
-
-    // Default room name
-    private final String DEFAULT_ROOM_NAME = "Lobby";
+    private String userName_;
     
     // Current room
-    private String currentRoom_ = DEFAULT_ROOM_NAME;
+    private String currentRoom_;
 
     // socket connection to the client
     private final Socket socket_;
 
     // Reference to the server
-    private final VocalServer vocal_server_;
+    private final VocalServer vocalServer_;
 
     // Unique uuid
     private final UUID uuid_;
 
     // Input Stream
-    private ObjectInputStream input_stream_ ;
+    private ObjectInputStream inputStream_ ;
 
     // Output Stream
-    private ObjectOutputStream output_stream_;
+    private ObjectOutputStream outputStream_;
 
     private boolean running_ = false;
 

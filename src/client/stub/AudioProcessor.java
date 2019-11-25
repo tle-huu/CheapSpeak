@@ -172,7 +172,6 @@ public class AudioProcessor
                             {
                             	sum += Math.abs(x);
                             }
-                            //Log.LOG(Log.Level.DEBUG, "Sum microphone: [" + Integer.toString(sum) + "]");
                             
                             SoundPacket soundPacket = null;
 

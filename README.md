@@ -1,1 +1,4 @@
-# vocal_chat
+# CheapSpeak
+
+gradle -PmainClass=client.ClientMain run
+

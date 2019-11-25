@@ -30,20 +30,18 @@ import utilities.infra.Log;
  */
 public class VocalServer
 {
-// PRIVATE CONST
 
-	// Starting number of threads in the thread pool
-	final int THREADS_NUMBER = 11;
-
-// PUBLIC
-	public VocalServer(int port) throws IOException, Exception
+// PUBLIC METHODS
+	
+	// Constructor
+	public VocalServer(final int port) throws IOException, Exception
 	{
 		port_ = port;
 
 		Log.LOG(Log.Level.INFO, "Server listening to port " + port);
-		listening_socket_ = new ServerSocket(port_);
+		listeningSocket_ = new ServerSocket(port_);
 
-		boolean success = init_rooms();
+		boolean success = initRooms();
 		if (!success)
 		{
 			throw new Exception("Server cannot run without rooms initialization");
@@ -70,28 +68,30 @@ public class VocalServer
 		// Starting main loop of accepting new connections
 		while (running_.get())
 		{
-            Socket new_client_socket = listening_socket_.accept();
-            Log.LOG(Log.Level.INFO, "New client [" + ((ThreadPoolExecutor)executor_).getActiveCount() + " < " + THREADS_NUMBER + "]");
+            Socket newClientSocket = listeningSocket_.accept();
+            Log.LOG(Log.Level.INFO, "New client: [" + ((ThreadPoolExecutor) executor_).getActiveCount()
+            		+ " < " + THREADS_NUMBER + "]");
 
             try
             {
-	            ClientConnection new_connection_client = new ClientConnection(this, new_client_socket);
-	            add_client(new_connection_client);
+	            ClientConnection newConnectionClient = new ClientConnection(this, newClientSocket);
+	            addClient(newConnectionClient);
 
 	            if (((ThreadPoolExecutor) executor_).getActiveCount() < THREADS_NUMBER)
 	            {
-		            Log.LOG(Log.Level.INFO, "Using fixed thread pool thread: " + ((ThreadPoolExecutor)executor_).getActiveCount() + " < " + THREADS_NUMBER + "]");
-		            executor_.execute(new_connection_client);
+		            Log.LOG(Log.Level.INFO, "Using fixed thread pool thread: ["
+		            		+ ((ThreadPoolExecutor) executor_).getActiveCount() + " < " + THREADS_NUMBER + "]");
+		            executor_.execute(newConnectionClient);
 	            }
 	            else
 	            {
 		            Log.LOG(Log.Level.INFO, "FixedThreadPool full, creating a new thread from fallthrough threadpool");
-		            fallthrough_executor_.execute(new_connection_client);
+		            fallthroughExecutor_.execute(newConnectionClient);
 	            }
             }
             catch (IOException e)
             {
-            	new_client_socket.close();
+            	newClientSocket.close();
             }
 
 		}
@@ -103,7 +103,6 @@ public class VocalServer
 		try
 		{
 			broadcaster.join();
-
 		}
 		catch (InterruptedException e)
 		{
@@ -112,31 +111,30 @@ public class VocalServer
 		return true;
 	}
 
-// Exposed interface for server side objects (mainly used by the ConnetionClients)
-	public boolean add_to_broadcast(final Event event)
+	// Exposed interface for server side objects (mainly used by the ConnetionClients)
+	public boolean addToBroadcast(final Event event)
 	{
-		return broadcast_queue_.push(event);
+		return broadcastQueue_.push(event);
 	}
 
-	public Event pop_from_broadcast()
+	public Event popFromBroadcast()
 	{
-		return broadcast_queue_.pop();
+		return broadcastQueue_.pop();
 	}
 
-	public void add_room(final ServerRoom room)
+	public void addRoom(final ServerRoom room)
 	{
 		rooms_.put(room.name(), room);
 	}
 
-	public void remove_room(final String room_name)
+	public void removeRoom(final String roomName)
 	{
-		rooms_.remove(room_name);
+		rooms_.remove(roomName);
 	}
-
 
 	// Move client from an old room to a new room.
 	// If oldRoomName is null, just update the new room with the client id
-	public boolean update_room(final UUID clientUUID, final String oldRoomName, final String newRoomName)
+	public boolean updateRoom(final UUID clientUUID, final String oldRoomName, final String newRoomName)
 	{
 		if (oldRoomName != null)
 		{
@@ -149,7 +147,7 @@ public class VocalServer
 				return false;
 			}
 
-			oldRoom.remove_client(clientUUID);
+			oldRoom.removeClient(clientUUID);
 		}
 
         // Adding the client to the new room
@@ -160,15 +158,15 @@ public class VocalServer
 			return false;
 		}
 
-        newRoom.add_client(clientUUID);
+        newRoom.addClient(clientUUID);
 		return true;
 	}
 
-	public boolean remove_client(UUID client_uuid)
+	public boolean removeClient(UUID clientUuid)
 	{
-		ServerRoom client_room = rooms_.get(clients_.get(client_uuid).currentRoom());
-		client_room.remove_client(client_uuid);
-		clients_.remove(client_uuid);
+		ServerRoom clientRoom = rooms_.get(clients_.get(clientUuid).currentRoom());
+		clientRoom.removeClient(clientUuid);
+		clients_.remove(clientUuid);
 		return true;
 	}
 
@@ -178,11 +176,11 @@ public class VocalServer
 		running_.set(false);
 	}
 
-	public boolean is_present(final UUID current_client_uuid, final String user_name)
+	public boolean isPresent(final UUID currentClientUuid, final String userName)
 	{
-		for (ClientConnection client : clients_.values())
+		for (ClientConnection client: clients_.values())
 		{
-			if (current_client_uuid != client.uuid() && client.user_name().equals(user_name))
+			if (currentClientUuid != client.uuid() && client.userName().equals(userName))
 			{
 				return true;
 			}
@@ -191,7 +189,7 @@ public class VocalServer
 	}
 
 	// Returns the rooms as a vector not to interfeere with the hashtable
-    public Vector<ServerRoom> rooms_vector()
+    public Vector<ServerRoom> roomsVector()
     {
         Vector<ServerRoom> rooms = new Vector<ServerRoom>(rooms_.size());
         for (ServerRoom room : rooms_.values())
@@ -212,35 +210,37 @@ public class VocalServer
 		return clients_;
 	}
 
-	public ClientConnection get_client(final UUID client_uuid)
+	public ClientConnection getClient(final UUID clientUuid)
 	{
-		return clients_.get(client_uuid);
+		return clients_.get(clientUuid);
 	}
 
 	public boolean running()
 	{
 		return running_.get();
 	}
+	
+	public String defaultRoomName()
+	{
+		return DEFAULT_ROOM_NAME;
+	}
 
-
-
-// PRIVATE
+// PRIVATE METHODS
 
 	// Initializes rooms in the server
-	private boolean init_rooms()
+	private boolean initRooms()
 	{
 		try
 		{
 			// Lobby room is the default room for new comer
-	        ServerRoom lobby = new ServerRoom("Lobby", this);
+	        ServerRoom lobby = new ServerRoom(DEFAULT_ROOM_NAME, this);
 	        rooms_.put(lobby.name(), lobby);
 
-            add_room(new ServerRoom("General", this));
-            add_room(new ServerRoom("Students", this));
-            add_room(new ServerRoom("Random", this));
-            add_room(new ServerRoom("ADR", this));
-            add_room(new ServerRoom("Forum CentraleSupelec", this));
-            add_room(new ServerRoom("VIA", this));
+	        // Add rooms
+	        for (String roomName: ROOM_NAMES)
+	        {
+	        	addRoom(new ServerRoom(roomName, this));
+	        }
 
 	        return true;
 		}
@@ -252,13 +252,30 @@ public class VocalServer
 	}
 
 	// Adds client to the hashmap
-	private boolean add_client(ClientConnection client_conn)
+	private boolean addClient(final ClientConnection clientConn)
 	{
-		clients_.put(client_conn.uuid(), client_conn);
+		clients_.put(clientConn.uuid(), clientConn);
 		return true;
 	}
 
-// PRIVATE
+// PRIVATE ATTRIBUTES
+
+	// Room names
+    private final String   DEFAULT_ROOM_NAME = "Lobby";
+    private final String[] ROOM_NAMES = {"General", 
+			"Students", 
+			"Random", 
+			"BDE", 
+			"ADR", 
+			"BDA", 
+			"Forum", 
+			"ViaRezo", 
+			"Iris", 
+			"Raid",
+			"Centrale 7s"};
+    
+	// Starting number of threads in the thread pool
+	private final int THREADS_NUMBER = 11;
 
 	// Hash map to store client connections objects
 	private ConcurrentHashMap<UUID, ClientConnection> clients_ = new ConcurrentHashMap<UUID, ClientConnection>();
@@ -267,21 +284,21 @@ public class VocalServer
 	private ConcurrentHashMap<String, ServerRoom> rooms_ = new ConcurrentHashMap<String, ServerRoom>();
 
 	// Shared ring buffer for broadcaster and client connections communication
-	private FixedVector<Event> 			broadcast_queue_ = new FixedVector<Event>();
+	private FixedVector<Event> broadcastQueue_ = new FixedVector<Event>();
 
 	/* 
 	 * Server infras
 	 */
-	private int 							port_;
+	private int             port_;
 
-	private ServerSocket 					listening_socket_;
+	private ServerSocket    listeningSocket_;
 
-	private AtomicBoolean 					running_ = new AtomicBoolean(false);
+	private AtomicBoolean   running_ = new AtomicBoolean(false);
 
 	// ThreadPools for client connection thread
-	private ExecutorService 				executor_ = Executors.newFixedThreadPool(THREADS_NUMBER);
+	private ExecutorService executor_ = Executors.newFixedThreadPool(THREADS_NUMBER);
 
 	// Back up thread pool used when the main threadpool capacity is reached
-	private ExecutorService 				fallthrough_executor_ = Executors.newCachedThreadPool();
+	private ExecutorService fallthroughExecutor_ = Executors.newCachedThreadPool();
 
 }
