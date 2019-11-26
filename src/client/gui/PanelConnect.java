@@ -170,6 +170,7 @@ public class PanelConnect extends JPanel implements ThemeUI
 		
 		// Connect button
 		buttonPanel_.setBackground(UIManager.getColorResource("BACKGROUND_COLOR"));
+		connectButton_.setBackground(UIManager.getColorResource("BUTTON_COLOR"));
 		connectButton_.setForeground(UIManager.getColorResource("PANEL_CONNECT_FONT_FIELD_COLOR"));
 	}
 	

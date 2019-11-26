@@ -21,6 +21,7 @@ public class UIResourcesLight extends UIResources
 							  OTHER_MESSAGE_COLOR = new Color(0xF5FFE8),
 							  PANEL_CONNECT_FONT_LABEL_COLOR = new Color(0x333333),
 							  PANEL_CONNECT_FONT_FIELD_COLOR = new Color(0x333333),
+							  BUTTON_COLOR = new Color(0xEEEEEE),
 							  TREE_COLOR = new Color(0xFFFFFF),
 							  FONT_TREE_COLOR = new Color(0x333333),
 							  TREE_PSEUDO_COLOR = new Color(0xBF270F);
