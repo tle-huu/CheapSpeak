@@ -1,0 +1,14 @@
+WRITE THIS IN THE BIN FILE:
+jar cfm <file_name>.jar manifest.txt <files_to_add>
+ex:	jar cfm server.jar ../manifestServer.txt server utilities
+	jar cfm client.jar ../manifestClient.txt client utilities
+
+WRITE THIS TO EXECUTE THE JAR:
+java -jar <file_name>.jar (args)
+ex:	java -jar server.jar 4242
+	java -jar client.jar
+
+HOW TO WRITE THE MANIFEST:
+Main-Class: <path_to_file_name> (+ line break)
+ex:	Main-Class: server.ServerMain
+	Main-Class: client.ClientMain
